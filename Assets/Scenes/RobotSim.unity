@@ -451,7 +451,63 @@ MonoBehaviour:
     4) Tweaking
     reward parameters
 
-    5) Updating checkpoint_interval and summary_freq in .yaml'
+    5) Updating checkpoint_interval and summary_freq in .yaml
+
+
+    Run
+    08: Wheely is a scaredy cat. But parallel training worked.
+
+    Updates for next
+    run:
+
+    1) Remove End_Episode from hitting a wall.
+
+    2) Uncheck "Is Trigger"
+    on walls to make it impossible for Wheely to fall out of the map
+
+
+    Run 09:
+    Wheely is decent, but may be engaging in reward hacking by wiggling and going
+    back and forth when the sphere is in sight.
+
+    Updates for next run:
+
+    1)
+    Match reward and penalty for distance from sphere
+
+    2) Add centering reward
+    inside if statement (only triggers when moving closer to sphere)
+
+    3) Tweak
+    reward values
+
+
+    Run 10: Wheely is retarded. Simplifying the structure substantially.
+
+    Updates
+    for next run:
+
+    1) Remove sight, distance, and centeredness rewards. Leave
+    sphere reward, wall penalty, and existing penalty
+
+    2) Increase beta and curiosity
+
+    3)
+    Increase max step per episode to 5000
+
+
+    Run 11: Wheely is smarter. Simplifying
+    the reward structure generated lots of improvement. Unfortunately, Wheely likes
+    to explore a bit too much.
+
+    Updates for next run:
+
+    1) Lower curiosity
+
+    2)
+    Consider closing reward
+
+    3) Resume from this run'
 --- !u!4 &640742989
 Transform:
   m_ObjectHideFlags: 0

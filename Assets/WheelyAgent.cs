@@ -3,6 +3,8 @@ using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
 using UnityEngine;
 using UnityEngine.InputSystem;
+//using static UnityEditor.Rendering.CameraUI;
+//using static UnityEngine.InputSystem.LowLevel.InputStateHistory;
 
 public class WheelyAgent : Agent
 {
@@ -99,6 +101,8 @@ public class WheelyAgent : Agent
         // Only reveal sphere location if a ray actually hit it
         if (sphereDetected)
         {
+
+            //Debug.Log("Sphere detected, distance: " + distanceToTarget);
             sphereInSight = true;
             distanceToTarget = sphereDistance / sphereHits; // average distance from rays that hit the sphere
             sensor.AddObservation(sphereDistance / sphereHits);  // how far (on average)
@@ -123,21 +127,26 @@ public class WheelyAgent : Agent
         transform.Rotate(0, turn * turnSpeed * Time.deltaTime, 0);
         transform.Translate(Vector3.forward * move * moveSpeed * Time.deltaTime);
 
+        if (distanceToTarget < previousDistanceToTarget)
+            AddReward(0.002f);  // reward for getting closer to the target 
+         
         // Small reward for keeping the target in sight, encourages exploration and tracking
-        if (sphereInSight)
-        {
-            AddReward(0.001f); // reward for seeing the target
+        //if (sphereInSight)
+        //{
+        //    AddReward(0.001f); // reward for seeing the target
 
-            // reward for centering the target in the sensor arc
-            float avgAngle = sphereAngle / sphereHits;
-            float centeredness = 1f - Mathf.Abs(avgAngle);
-            AddReward(centeredness * 0.001f);
-
-            if (distanceToTarget < previousDistanceToTarget)
-                AddReward(0.005f);  // reward for getting closer to the target 
-            else
-                AddReward(-0.003f); // penalty for moving away from the target
-        }
+        //    if (distanceToTarget < previousDistanceToTarget)
+        //    {
+        //        AddReward(0.005f);  // reward for getting closer to the target 
+        //        float avgAngle = sphereAngle / sphereHits;
+        //        float centeredness = 1f - Mathf.Abs(avgAngle);
+        //        AddReward(centeredness * 0.001f); // reward for centering the target in the sensor arc
+        //    }
+        //    else
+        //    {
+        //        AddReward(-0.005f); // penalty for moving away from the target
+        //    }
+        //}
 
         // Small penalty each step to encourage efficiency
         AddReward(-0.001f);
@@ -153,20 +162,41 @@ public class WheelyAgent : Agent
                                Keyboard.current.dKey.isPressed ? 1f : 0f;
         continuousActions[1] = Keyboard.current.wKey.isPressed ? 1f :
                                Keyboard.current.sKey.isPressed ? -1f : 0f;
+        if (sphereInSight)
+        {
+            //Debug.Log("Heuristic: Sphere in sight, distance: " + distanceToTarget);
+
+            if (distanceToTarget < previousDistanceToTarget)
+            {
+                Debug.Log("Heuristic: Getting closer to the target. Rewarded 0.005f!");
+                float avgAngle = sphereAngle / sphereHits;
+                float centeredness = 1f - Mathf.Abs(avgAngle);
+                //Debug.Log("Heuristic: Target centeredness: " + centeredness + ". Rewarded " + (centeredness * 0.001f) + "!");
+            }
+            else
+            {
+                Debug.Log("Heuristic: WHAT ARE YOU DOING?! Moving away from the target. Penalized 0.005f!");
+            }
+        }
+
+        previousDistanceToTarget = distanceToTarget;
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Wall"))
+        {
+            AddReward(-0.5f);
+            EndEpisode();
+        }
     }
 
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("SphereOfInterest"))
         {
-            AddReward(2f);   // big reward for finding the target
+            AddReward(2.5f);   // big reward for finding the target
             EndEpisode();      // start fresh
-        }
-
-        if (other.CompareTag("Wall"))
-        {
-            AddReward(-0.5f);  // penalty for hitting a wall
-            EndEpisode();      // reset rather than getting stuck
         }
     }
 
