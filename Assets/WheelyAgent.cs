@@ -24,6 +24,9 @@ public class WheelyAgent : Agent
     private float sphereAngle;
     private int sphereHits;
 
+    [Header("Environment")]
+    public Transform environmentCenter;
+
 
     public override void OnEpisodeBegin()
     {
@@ -31,8 +34,12 @@ public class WheelyAgent : Agent
         previousDistanceToTarget = 0f;
         distanceToTarget = 0f;
 
-        // Spawn in the center rather than a corner
-        transform.position = new Vector3(0, transform.position.y, 0);
+        // Reset to environment center, not world center
+        transform.position = new Vector3(
+            environmentCenter.position.x,
+            transform.position.y,
+            environmentCenter.position.z
+        );
 
         // Random starting rotation so he faces a random direction
         transform.rotation = Quaternion.Euler(0, Random.Range(0f, 360f), 0);
@@ -42,9 +49,9 @@ public class WheelyAgent : Agent
         do
         {
             newPos = new Vector3(
-                Random.Range(-20f, 20f),
+                environmentCenter.position.x + Random.Range(-20f, 20f),
                 target.position.y,
-                Random.Range(-20f, 20f)
+                environmentCenter.position.z + Random.Range(-20f, 20f)
             );
         } while (Vector3.Distance(newPos, transform.position) < 10f); // ensure target isn't too close at start
 
@@ -163,20 +170,20 @@ public class WheelyAgent : Agent
         }
     }
 
-    void OnDrawGizmos()
-    {
-        // Visualise sensor rays in Scene view
-        if (!Application.isPlaying) return;
+    //void OnDrawGizmos()
+    //{
+    //    // Visualise sensor rays in Scene view
+    //    if (!Application.isPlaying) return;
 
-        float angleStep = arcAngle / (rayCount - 1);
-        float startAngle = -arcAngle / 2f;
+    //    float angleStep = arcAngle / (rayCount - 1);
+    //    float startAngle = -arcAngle / 2f;
 
-        for (int i = 0; i < rayCount; i++)
-        {
-            float angle = startAngle + (angleStep * i);
-            Vector3 dir = Quaternion.Euler(0, angle, 0) * transform.forward;
-            Gizmos.color = Color.green;
-            Gizmos.DrawRay(transform.position, dir * sensorRange);
-        }
-    }
+    //    for (int i = 0; i < rayCount; i++)
+    //    {
+    //        float angle = startAngle + (angleStep * i);
+    //        Vector3 dir = Quaternion.Euler(0, angle, 0) * transform.forward;
+    //        Gizmos.color = Color.green;
+    //        Gizmos.DrawRay(transform.position, dir * sensorRange);
+    //    }
+    //}
 }
