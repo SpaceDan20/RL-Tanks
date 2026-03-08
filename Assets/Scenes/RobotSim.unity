@@ -1116,7 +1116,33 @@ MonoBehaviour:
     3/1
     - Wheely found an interesting strategy: Become a beyblade. Once he finds the
     sphere, he hacks the rewards by driving forward and backward quickly to gather
-    "getting closer" rewards. Must add the "getting further away" penalty back!'
+    "getting closer" rewards. Must add the "getting further away" penalty back!
+
+
+    3/2
+    - Run 05 worked but didn''t make much progress after 100,000 steps. Tweaking
+    reward parameters, adding curiosity NN, and tweaking max step per episode from
+    2.5k to 3k steps.
+
+
+    Run 07: Wheely is great, but he is terrified of walls.
+    He freezes up, even! However, sometimes his fight instincts take over and he
+    bum rushes into the wall. Poor wheely. He also occasionally misses the sphere.
+
+    Updates
+    for next run:
+
+    1) Lower curiosity, beta in .yaml
+
+    2) Setting up parallel
+    run environments
+
+    3) Adding reward for "centering" sphere
+
+    4) Tweaking
+    reward parameters
+
+    5) Updating checkpoint_interval and summary_freq in .yaml'
 --- !u!4 &640742989
 Transform:
   m_ObjectHideFlags: 0
@@ -2138,11 +2164,11 @@ MonoBehaviour:
   agentParameters:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
-  MaxStep: 2500
-  moveSpeed: 3
+  MaxStep: 3500
+  moveSpeed: 5
   turnSpeed: 90
   target: {fileID: 312286657}
-  sensorRange: 10
+  sensorRange: 20
   rayCount: 50
   arcAngle: 120
   detectionLayers:
@@ -2170,9 +2196,9 @@ MonoBehaviour:
     VectorActionDescriptions: []
     VectorActionSpaceType: 1
     hasUpgradedBrainParametersWithActionSpec: 1
-  m_Model: {fileID: 0}
+  m_Model: {fileID: 5022602860645237092, guid: 6a62db14de4f8884a85e86daea554590, type: 3}
   m_InferenceDevice: 0
-  m_BehaviorType: 0
+  m_BehaviorType: 2
   m_BehaviorName: WheelyBrain
   TeamId: 0
   m_UseChildSensors: 1
