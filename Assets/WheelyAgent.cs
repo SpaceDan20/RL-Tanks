@@ -182,7 +182,7 @@ public class WheelyAgent : Agent
         previousDistanceToTarget = distanceToTarget;
     }
 
-    void OnCollisionEnter(Collision collision)
+    private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Wall"))
         {
@@ -191,7 +191,7 @@ public class WheelyAgent : Agent
         }
     }
 
-    void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("SphereOfInterest"))
         {
@@ -200,7 +200,7 @@ public class WheelyAgent : Agent
         }
     }
 
-    //void OnDrawGizmos()
+    //private void OnDrawGizmos()
     //{
     //    // Visualise sensor rays in Scene view
     //    if (!Application.isPlaying) return;

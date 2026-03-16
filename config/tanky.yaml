@@ -1,0 +1,35 @@
+behaviors:
+  TankyBrain:
+    trainer_type: ppo
+    hyperparameters:
+      batch_size: 512
+      buffer_size: 20000
+      learning_rate: 0.0003
+      beta: 0.005
+      epsilon: 0.2
+      lambd: 0.95
+      num_epoch: 3
+    network_settings:
+      normalize: true
+      hidden_units: 256
+      num_layers: 3
+    reward_signals:
+      extrinsic:
+        gamma: 0.99
+        strength: 1.0
+      curiosity:
+        gamma: 0.99
+        strength: 0.005
+        encoding_size: 256
+        learning_rate: 0.0003
+    self_play:
+      save_steps: 20000
+      team_change: 100000
+      swap_steps: 10000
+      window: 10
+      play_against_latest_model_ratio: 0.5
+      initial_elo: 1200.0
+    max_steps: 500000
+    time_horizon: 128
+    summary_freq: 5000
+    checkpoint_interval: 50000
