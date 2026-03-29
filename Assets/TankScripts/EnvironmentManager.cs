@@ -22,14 +22,25 @@ public class EnvironmentManager: MonoBehaviour
     public float minDistanceFromTanks; // Minimum distance from tanks to spawn obstacles
 
     [Header("Tanks")]
-    public Transform[] tankSpawnPoints;
-    public TankyAgent[] tanks;
+    public Transform[] teamASpawnPoints;
+    public Transform[] teamBSpawnPoints;
+    public TankyAgent[] teamATanks;
+    public TankyAgent[] teamBTanks;
 
     private List<GameObject> spawnedObstacles = new List<GameObject>(); // List to keep track of spawned obstacles
+    private bool episodeResetHandled = false; // Flag to ensure episode reset is handled only once
 
-    private void Start()
+    public void ResetEpisode()
     {
-        SpawnObstacles();
+        if (episodeResetHandled)
+        {
+            episodeResetHandled = false;
+            return; // Skip reset if it has already been handled
+        }
+        episodeResetHandled = true; // Set the flag to indicate reset is being handled
+        ClearObstacles(); // Clear existing obstacles
+        SpawnTanks(); // Spawn tanks at their respective spawn points
+        SpawnObstacles(); // Spawn new obstacles for the episode
     }
 
     public void ClearObstacles()
@@ -64,17 +75,31 @@ public class EnvironmentManager: MonoBehaviour
                 float zPos = Random.Range(groundPlane.position.z - groundPlane.localScale.z * 10f / 2f + spawnPadding,
                                             groundPlane.position.z + groundPlane.localScale.z * 10f / 2f - spawnPadding);
                 spawnPosition = new Vector3(xPos, groundPlane.position.y + selectedEntry.spawnHeight, zPos);
+
                 // Check if the spawn position is far enough from all tank spawn points
                 validPosition = true;
-                foreach (Transform tankSpawn in tankSpawnPoints)
+                foreach (Transform spawnPoint in teamASpawnPoints)
                 {
-                    if (Vector3.Distance(spawnPosition, tankSpawn.position) < minDistanceFromTanks)
+                    if (Vector3.Distance(spawnPosition, spawnPoint.position) < minDistanceFromTanks)
                     {
                         validPosition = false;
                         break;
                     }
                 }
+
+                if (validPosition)
+                {
+                    foreach (Transform spawnPoint in teamBSpawnPoints)
+                    {
+                        if (Vector3.Distance(spawnPosition, spawnPoint.position) < minDistanceFromTanks)
+                        {
+                            validPosition = false;
+                            break;
+                        }
+                    }
+                }
             }
+
             // Instantiate the obstacle at the valid spawn position
             Quaternion randomRotation = Quaternion.Euler(0, Random.Range(0f, 360f), 0);
             GameObject spawnedObstacle = Instantiate(selectedEntry.prefab, spawnPosition, randomRotation, obstaclesParent);
@@ -82,45 +107,64 @@ public class EnvironmentManager: MonoBehaviour
         }
     }
 
-    public void SpawnTanks(TankyAgent[] tanks)
+    public void SpawnTanks()
     {
-        for (int i = 0; i < tanks.Length; i++)
+        // Shuffle team A spawn points
+        List<int> teamAIndices = new List<int>();
+        for (int i = 0; i < teamASpawnPoints.Length; i++)
+            teamAIndices.Add(i);
+
+        for (int i = teamAIndices.Count - 1; i > 0; i--)
         {
-            tanks[i].transform.position = tankSpawnPoints[i].position;
-            tanks[i].transform.rotation = tankSpawnPoints[i].rotation;
-            tanks[i].OnEpisodeBegin(); // Reset the tank's state for the new episode
+            int randomIndex = Random.Range(0, i + 1);
+            int temp = teamAIndices[i];
+            teamAIndices[i] = teamAIndices[randomIndex];
+            teamAIndices[randomIndex] = temp;
         }
 
-    }
+        // Shuffle team B spawn points
+        List<int> teamBIndices = new List<int>();
+        for (int i = 0; i < teamBSpawnPoints.Length; i++)
+            teamBIndices.Add(i);
 
+        for (int i = teamBIndices.Count - 1; i > 0; i--)
+        {
+            int randomIndex = Random.Range(0, i + 1);
+            int temp = teamBIndices[i];
+            teamBIndices[i] = teamBIndices[randomIndex];
+            teamBIndices[randomIndex] = temp;
+        }
+
+        // Assign team A tanks to shuffled spawn points
+        for (int i = 0; i < teamATanks.Length; i++)
+        {
+            teamATanks[i].transform.position = teamASpawnPoints[teamAIndices[i]].position;
+            teamATanks[i].transform.rotation = teamASpawnPoints[teamAIndices[i]].rotation;
+        }
+
+        // Assign team B tanks to shuffled spawn points
+        for (int i = 0; i < teamBTanks.Length; i++)
+        {
+            teamBTanks[i].transform.position = teamBSpawnPoints[teamBIndices[i]].position;
+            teamBTanks[i].transform.rotation = teamBSpawnPoints[teamBIndices[i]].rotation;
+        }
+    }
 
     public void OnTankDestroyed(TankyAgent destroyedTank)
     {
-        // Reward surviving tanks and penalize the destroyed tank
-        foreach (TankyAgent agent in tanks)
+        Debug.Log("OnTankDestroyed called");
+
+        foreach (TankyAgent agent in teamATanks)
         {
-            if (agent == destroyedTank)
-            {
-                agent.AddReward(-1f); // Penalize the destroyed tank
-            }
-            else
-            {
-                agent.AddReward(1f); // Reward the surviving tank
-            }
-            agent.EndEpisode(); // End the episode for all tanks
+            agent.AddReward(agent == destroyedTank ? -1f : 2.5f);
+            agent.EndEpisode();
         }
 
-        // Clear obstacles
-        ClearObstacles();
-
-        // Reposition tanks at spawn points
-        for (int i = 0; i < tanks.Length; i++)
+        foreach (TankyAgent agent in teamBTanks)
         {
-            tanks[i].transform.position = tankSpawnPoints[i].position;
-            tanks[i].transform.rotation = tankSpawnPoints[i].rotation;
+            agent.AddReward(agent == destroyedTank ? -1f : 2.5f);
+            agent.EndEpisode();
         }
-
-        // Respawn obstacles
-        SpawnObstacles();
+        ResetEpisode();
     }
 }

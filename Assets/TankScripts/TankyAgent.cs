@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
@@ -29,6 +30,8 @@ public class TankyAgent : Agent
     public float gunReloadTime = 5f;
     public Transform barrelTip;
     private float fireCooldown;
+    private LineRenderer shotLine;
+    public float shotLineDuration = 1f;
 
     [Header("Sensors")]
     public LayerMask detectionLayers;
@@ -44,8 +47,6 @@ public class TankyAgent : Agent
     public int hullSensors = 45;
     public float hullSensorRange = 5f;
     public float hullSensorAngle = 240f;
-    private bool enemyInSight;
-    private float enemyDistance;
 
     [Header("References")]
     public Transform environmentCenter;
@@ -60,6 +61,14 @@ public class TankyAgent : Agent
         accelerationRate = maxSpeed / accelerationTime;
         decelerationRate = maxSpeed / decelerationTime;
         brakeRate = decelerationRate * brakeMultiplier;
+        shotLine = gameObject.AddComponent<LineRenderer>();
+        shotLine.startWidth = 0.5f;
+        shotLine.endWidth = 0.4f;
+        shotLine.material = new Material(Shader.Find("Sprites/Default"));
+        shotLine.startColor = new Color(1f, 0.5f, 0f, 0.8f);
+        shotLine.endColor = new Color(1f, 0.5f, 0f, 0f);
+        shotLine.enabled = false;
+        shotLine.useWorldSpace = true;
     }
 
     public override void OnEpisodeBegin()
@@ -74,14 +83,16 @@ public class TankyAgent : Agent
 
         // Reset health
         GetComponent<TankHealth>().ResetHealth();
+
+        // Reset episode in the environment manager to reposition tanks and reset any necessary state
+        environmentManager.ResetEpisode();
+
+        // Reset turret rotation 
+        turret.localRotation = Quaternion.identity;
     }
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        // Reset enemy sight info at the start of each observation collection
-        enemyInSight = false;
-        enemyDistance = 1f;
-
         // Gun sensors for detecting enemies and obstacles in the firing arc
         CastSensorArray(sensor, turret, gunSensorAngle, gunSensorRange, gunSensors, 0f); // Centered on turret forward
         // Turret sensors for situational awareness around the turret
@@ -169,27 +180,26 @@ public class TankyAgent : Agent
             {
                 Vector3 dir = barrelTip.forward; // direction the barrel is pointing
                 RaycastHit hit;
-                if (Physics.Raycast(barrelTip.position, dir, out hit, 1000f, detectionLayers))
+                bool hitSomething = Physics.Raycast(barrelTip.position, dir, out hit, 1000f, detectionLayers);
+                Vector3 shotEnd = hitSomething ? hit.point : barrelTip.position + barrelTip.forward * gunSensorRange;
+                StartCoroutine(ShowShotLine(barrelTip.position, shotEnd));
+                if (hitSomething && hit.collider.CompareTag("Tank"))
                 {
-                    if (hit.collider.CompareTag("Tank"))
+                    Debug.Log($"{gameObject.name} hit {hit.collider.gameObject.name} at distance {hit.distance:F2}");
+                    // Hit an enemy, apply damage and reward
+                    TankHealth enemyHealth = hit.collider.GetComponent<TankHealth>();
+                    if (enemyHealth != null)
                     {
-                        // Hit an enemy, apply damage and reward
-                        TankHealth enemyHealth = hit.collider.GetComponent<TankHealth>();
-                        if (enemyHealth != null)
-                        {
-                            enemyHealth.TakeDamage(shellDamage);
-                            AddReward(0.5f); // Reward for hitting an enemy
-                            fireCooldown = gunReloadTime; // reset cooldown
-                        }
+                        enemyHealth.TakeDamage(shellDamage);
+                        AddReward(1f); // Reward for hitting an enemy
                     }
                 }
+                else
+                {
+                    AddReward(-0.01f); // Small penalty for firing without hitting an enemy to encourage accuracy
+                }
+                fireCooldown = gunReloadTime; // reset cooldown
             }
-        }
-
-        // Reward for aiming at an enemy (if enemy is in sight and within a reasonable distance)
-        if (enemyInSight)
-        {
-            AddReward(0.001f);
         }
 
         // Step penalty
@@ -197,21 +207,22 @@ public class TankyAgent : Agent
 
 
         // Rewards from most to least important:
-        // 1. Destroying an enemy tank (+1.0) (done)
-        // 2. Hitting an enemy tank (+0.5) (done)
-        // 3. Aiming at an enemy tank (done)
+        // 1. Destroying an enemy tank (+2.5) (done)
+        // 2. Hitting an enemy tank (+1.0) (done)
 
         // Penalties from most to least important:
         // 1. Avoiding destruction (-1.0 when destroyed) (done)
-        // 2. Avoiding detection by enemy tank
-        // 3. Avoiding obstacles and getting stuck
-        // 4. Step penalty to encourage efficiency (done)
+        // 2. Avoiding getting hit (-0.5 per hit) (done)
+        // 3. Avoiding detection by enemy tank
+        // 4. Avoiding obstacles and getting stuck
+        // 5. Firing without hitting an enemy (-0.01 per shot) (done)
+        // 5. Step penalty to encourage efficiency (-0.001) (done)
     }
 
     private void Update()
     {
         // Cooldown management for firing
-        if (fireCooldown > 0f)
+        if (fireCooldown > 0.01f)
         {
             fireCooldown -= Time.deltaTime;
         }
@@ -236,6 +247,7 @@ public class TankyAgent : Agent
             Vector3 dir = Quaternion.Euler(0, angle, 0) * origin.forward;
             RaycastHit hit;
 
+            // Check if the ray hits something within range on the detection layers
             if (Physics.Raycast(origin.position, dir, out hit, range, detectionLayers))
             {
                 sensor.AddObservation(1f); // Hit something
@@ -243,8 +255,6 @@ public class TankyAgent : Agent
                 {
                     sensor.AddObservation(hit.distance / range); // Normalized distance to enemy
                     sensor.AddObservation(1f); // Enemy detected
-                    enemyInSight = true;
-                    enemyDistance = hit.distance;
                 }
                 else
                 {
@@ -264,7 +274,6 @@ public class TankyAgent : Agent
     public void OnDestroyed()
     {
         environmentManager.OnTankDestroyed(this); // Notify environment manager of destruction
-        EndEpisode(); // End the episode when the tank is destroyed
     }
 
     private void DrawSensorGizmos(
@@ -291,10 +300,20 @@ public class TankyAgent : Agent
     {
         // Visualise sensor rays in Scene view
         if (turret == null) return;
-        DrawSensorGizmos(turret, gunSensorAngle, gunSensorRange, gunSensors, 0f, Color.red);
-        DrawSensorGizmos(turret, turretSensorAngle, turretSensorRange, turretSensors, 0f, Color.yellow);
-        DrawSensorGizmos(transform, driverSensorAngle, driverSensorRange, driverSensors, 0f, Color.green);
-        DrawSensorGizmos(transform, hullSensorAngle, hullSensorRange, hullSensors, -180f, Color.blue);
+        DrawSensorGizmos(turret, gunSensorAngle, gunSensorRange, gunSensors, 0f, new Color(1f, 0f, 0f, 0.1f));
+        DrawSensorGizmos(turret, turretSensorAngle, turretSensorRange, turretSensors, 0f, new Color(1f, 1f, 0f, 0.1f));
+        DrawSensorGizmos(transform, driverSensorAngle, driverSensorRange, driverSensors, 0f, new Color(0f, 1f, 0f, 0.1f));
+        DrawSensorGizmos(transform, hullSensorAngle, hullSensorRange, hullSensors, -180f, new Color(0f, 0f, 1f, 0.1f));
+    }
+
+    private IEnumerator ShowShotLine(Vector3 start, Vector3 end)
+    {
+        // Visual feedback for firing - shows a line from the barrel tip to the hit point for a brief moment
+        shotLine.SetPosition(0, start);
+        shotLine.SetPosition(1, end);
+        shotLine.enabled = true;
+        yield return new WaitForSeconds(shotLineDuration);
+        shotLine.enabled = false;
     }
 
     public override void Heuristic(in ActionBuffers actionsOut)

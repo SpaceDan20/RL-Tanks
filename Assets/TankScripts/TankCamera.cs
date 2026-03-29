@@ -4,6 +4,7 @@ public class TankCamera : MonoBehaviour
 {
     [Header("Target")]
     public Transform target;
+    public Transform turret;
 
     [Header("Position")]
     public float distance = 10f;
@@ -13,7 +14,6 @@ public class TankCamera : MonoBehaviour
 
     [Header("Rotation")]
     public float rotationDamping = 3f;
-    public bool followTurret = false;
 
     [Header("Collision")]
     public float minDistance = 2f;
@@ -37,8 +37,9 @@ public class TankCamera : MonoBehaviour
     {
         if (target == null) return;
 
-        // Smoothly match target's Y rotation
-        float targetRotationAngle = target.eulerAngles.y;
+        // Use turret rotation if assigned, otherwise fall back to hull
+        Transform rotationSource = (turret != null) ? turret : target;
+        float targetRotationAngle = rotationSource.eulerAngles.y;
         float currentRotationAngle = transform.eulerAngles.y;
 
         currentRotationAngle = Mathf.LerpAngle(

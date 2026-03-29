@@ -20,8 +20,9 @@ public class TankHealth : MonoBehaviour
 
     public void TakeDamage(float damageAmount)
     {
+        tankyAgent.AddReward(-0.25f); // Penalize the agent for taking damage
         currentHealth -= damageAmount;
-        if (currentHealth <= 0f)
+        if (currentHealth <= 0.01f)
         {
             currentHealth = 0f;
             // Handle tank destruction here (e.g., play explosion, disable tank, etc.)

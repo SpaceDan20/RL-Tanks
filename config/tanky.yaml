@@ -2,8 +2,8 @@ behaviors:
   TankyBrain:
     trainer_type: ppo
     hyperparameters:
-      batch_size: 512
-      buffer_size: 20000
+      batch_size: 1024
+      buffer_size: 50000
       learning_rate: 0.0003
       beta: 0.005
       epsilon: 0.2
@@ -30,6 +30,6 @@ behaviors:
       play_against_latest_model_ratio: 0.5
       initial_elo: 1200.0
     max_steps: 500000
-    time_horizon: 128
+    time_horizon: 256
     summary_freq: 5000
     checkpoint_interval: 50000
