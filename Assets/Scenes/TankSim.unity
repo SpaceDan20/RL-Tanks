@@ -831,48 +831,115 @@ MonoBehaviour:
 
     Death penalty -1
 
-    ---
 
-    Tanks didn''t learn very well.
-    Tanks may have been reward hacking the sight reward, and they spam fired the
-    whole time.
+    Tanks didn''t learn very well. Tanks
+    may have been reward hacking the sight reward, and they spam fired the whole
+    time.
 
-    ---
+    --------------------------------
 
     Run 02:
 
     Kill reward +2.5
 
-    Hit reward +1
+    Hit
+    reward +1
 
-    Step
-    penalty -0.001
+    Step penalty -0.001
 
     Hitting nothing penalty -0.01
 
-    Getting hit penalty -0.25
+    Getting
+    hit penalty -0.25
 
-    Death
-    penalty -1
+    Death penalty -1
 
-    ---
 
-    Tanks still didn''t learn. They followed the same trajectory
-    as before.
+    Tanks still didn''t learn. They
+    followed the same trajectory as before.
 
-    ---
+    --------------------------------
 
-    Run 03:
+    Run
+    03 & 04:
 
     Same rewards as Run 02, but YAML reconfigured:
 
-    Buffer
-    Size: 20,000 --> 50,000
+    Buffer Size:
+    20,000 --> 50,000
 
     Batch Size: 512 --> 1024
 
-    Time Horizon: 128
-    --> 256'
+    Time Horizon: 128 --> 256
+
+
+    04
+    was just a model update and test. Both runs 03 and 04 produced no meaningful
+    improvements.
+
+    --------------------------------
+
+    Run 05:
+
+    Same rewards,
+    but Curriculum learning was introduced with differing spawn distances. The tanks
+    will now spawn closer until they are able to advance.
+
+
+    Curriculum advanced
+    too quickly. Tanks likely got lucky in the small amount of episodes (20) and
+    caused the smoothed average to temporarily spike high enough to advance it.
+
+    --------------------------------
+
+    Run
+    06:
+
+    Same rewards, but curriculum in YAML was tweaked.
+
+    min_lesson_length:
+    20 --> 50
+
+    thresholds: -3.5 and -2.5 --> -2.5 and -1
+
+
+    Curriculum did
+    not advance too quickly, but tanks still struggled to learn anything. Still spam
+    firing. Still not centering each other properly. Tanks spent most of their time
+    in medium spawns looking for one another.
+
+    --------------------------------
+
+    Run
+    07:
+
+    Introduction of a PBRS reward: turret-aiming.
+
+    Tweaking rewards.
+
+    Kill
+    reward: 2.5 --> 0.5
+
+    Hit reward: 1 --> 0.5
+
+    Step penalty: 0.001
+
+    Missed-shot
+    penalty: 0.01 --> 0.05
+
+    Getting hit penalty: -0.25
+
+    Death penalty: -1
+    --> -0.5
+
+    Turret aiming reward (PBRS)
+
+    (YAML) min_lesson_length: 50 -->
+    100
+
+
+
+'
 --- !u!4 &1459984442
 Transform:
   m_ObjectHideFlags: 0

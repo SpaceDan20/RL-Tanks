@@ -127,10 +127,33 @@ public class EnvironmentManager: MonoBehaviour
         return far;
     }
 
+    public List<TankyAgent> GetAllEnemies(TankyAgent requestingAgent)
+    {
+        List<TankyAgent> enemies = new List<TankyAgent>();
+
+        // Check if requesting agent is on team A
+        foreach (TankyAgent agent in teamATanks)
+        {
+            if (agent == requestingAgent)
+            {
+                // Requesting agent is team A, so enemies are team B
+                foreach (TankyAgent enemy in teamBTanks)
+                    enemies.Add(enemy);
+                return enemies;
+            }
+        }
+
+        // Requesting agent must be team B, so enemies are team A
+        foreach (TankyAgent enemy in teamATanks)
+            enemies.Add(enemy);
+
+        return enemies;
+    }
+
     public void SpawnTanks()
     {
-        Transform[] teamASpawnPoints = GetSpawnPoints(teamACloseSpawnPoints, teamAMidSpawnPoints, teamAFarSpawnPoints);
-        Transform[] teamBSpawnPoints = GetSpawnPoints(teamBCloseSpawnPoints, teamBMidSpawnPoints, teamBFarSpawnPoints);
+        teamASpawnPoints = GetSpawnPoints(teamACloseSpawnPoints, teamAMidSpawnPoints, teamAFarSpawnPoints);
+        teamBSpawnPoints = GetSpawnPoints(teamBCloseSpawnPoints, teamBMidSpawnPoints, teamBFarSpawnPoints);
 
         // Shuffle team A spawn points
         List<int> teamAIndices = new List<int>();
@@ -177,17 +200,17 @@ public class EnvironmentManager: MonoBehaviour
 
     public void OnTankDestroyed(TankyAgent destroyedTank)
     {
-        Debug.Log("OnTankDestroyed called");
+        Debug.Log("Oooh! Son got blowed up!");
 
         foreach (TankyAgent agent in teamATanks)
         {
-            agent.AddReward(agent == destroyedTank ? -1f : 2.5f);
+            agent.AddReward(agent == destroyedTank ? -0.5f : 0.5f);
             agent.EndEpisode();
         }
 
         foreach (TankyAgent agent in teamBTanks)
         {
-            agent.AddReward(agent == destroyedTank ? -1f : 2.5f);
+            agent.AddReward(agent == destroyedTank ? -0.5f : 0.5f);
             agent.EndEpisode();
         }
         ResetEpisode();

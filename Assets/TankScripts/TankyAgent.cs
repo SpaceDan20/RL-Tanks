@@ -53,6 +53,8 @@ public class TankyAgent : Agent
     public EnvironmentManager environmentManager;
 
     private Rigidbody rb;
+    private float previousAlignmentPotential;
+    private bool enemyInSight;
 
     public override void Initialize()
     {
@@ -81,6 +83,10 @@ public class TankyAgent : Agent
         // Reset firing cooldown
         fireCooldown = 0f;
 
+        // Reset alignment potential tracking and enemy sight flag
+        previousAlignmentPotential = 0f;
+        enemyInSight = false;
+
         // Reset health
         GetComponent<TankHealth>().ResetHealth();
 
@@ -93,6 +99,7 @@ public class TankyAgent : Agent
 
     public override void CollectObservations(VectorSensor sensor)
     {
+        enemyInSight = false; // Reset enemy in sight flag at the start of observation collection
         // Gun sensors for detecting enemies and obstacles in the firing arc
         CastSensorArray(sensor, turret, gunSensorAngle, gunSensorRange, gunSensors, 0f); // Centered on turret forward
         // Turret sensors for situational awareness around the turret
@@ -191,32 +198,71 @@ public class TankyAgent : Agent
                     if (enemyHealth != null)
                     {
                         enemyHealth.TakeDamage(shellDamage);
-                        AddReward(1f); // Reward for hitting an enemy
+                        AddReward(0.5f); // Reward for hitting an enemy
                     }
                 }
                 else
                 {
-                    AddReward(-0.01f); // Small penalty for firing without hitting an enemy to encourage accuracy
+                    AddReward(-0.05f); // Missed shot penalty to encourage accuracy
                 }
                 fireCooldown = gunReloadTime; // reset cooldown
             }
         }
 
+        if (enemyInSight) // Only calculate alignment potential if an enemy is detected in the sensor arrays
+        {
+            float currentAlignmentPotential = GetAlignmentPotential();
+            float alignmentShaping = (0.99f * currentAlignmentPotential) - previousAlignmentPotential;
+            AddReward(alignmentShaping * 0.1f); // Reward for improving alignment with nearest enemy, scaled down
+            previousAlignmentPotential = currentAlignmentPotential;
+        }
+        else
+        {
+            previousAlignmentPotential = 0f;
+        }
+
         // Step penalty
         AddReward(-0.001f);
 
+        // Discrete rewards:
+        // Kill, Hits
 
-        // Rewards from most to least important:
-        // 1. Destroying an enemy tank (+2.5) (done)
-        // 2. Hitting an enemy tank (+1.0) (done)
+        // Discrete penalties:
+        // Death, Getting hit, Missed shots, Step penalty
 
-        // Penalties from most to least important:
-        // 1. Avoiding destruction (-1.0 when destroyed) (done)
-        // 2. Avoiding getting hit (-0.5 per hit) (done)
-        // 3. Avoiding detection by enemy tank
-        // 4. Avoiding obstacles and getting stuck
-        // 5. Firing without hitting an enemy (-0.01 per shot) (done)
-        // 5. Step penalty to encourage efficiency (-0.001) (done)
+        // PBRS:
+        // Turret aiming
+
+        // Considerations:
+        // Avoiding detection, avoiding obstacles, movement
+    }
+
+    private TankyAgent GetNearestEnemy()
+    {
+        TankyAgent nearest = null;
+        float nearestDistance = float.MaxValue;
+
+        foreach (TankyAgent agent in environmentManager.GetAllEnemies(this))
+        {
+            float distance = Vector3.Distance(transform.position, agent.transform.position);
+            if (distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                nearest = agent;
+            }
+        }
+
+        return nearest;
+    }
+
+    private float GetAlignmentPotential()
+    {
+        TankyAgent nearestEnemy = GetNearestEnemy();
+        if (nearestEnemy == null) return 0f;
+
+        Vector3 toEnemy = (nearestEnemy.transform.position - turret.position).normalized;
+        float angle = Vector3.Angle(turret.forward, toEnemy);
+        return 1f - (angle / 180f);
     }
 
     private void Update()
@@ -253,6 +299,7 @@ public class TankyAgent : Agent
                 sensor.AddObservation(1f); // Hit something
                 if (hit.collider.CompareTag("Tank"))
                 {
+                    enemyInSight = true;
                     sensor.AddObservation(hit.distance / range); // Normalized distance to enemy
                     sensor.AddObservation(1f); // Enemy detected
                 }
