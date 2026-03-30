@@ -33,3 +33,25 @@ behaviors:
     time_horizon: 256
     summary_freq: 5000
     checkpoint_interval: 50000
+
+environment_parameters:
+  spawn_difficulty:
+    curriculum:
+      - name: close
+        completion_criteria:
+          measure: reward
+          behavior: TankyBrain
+          signal_smoothing: true
+          min_lesson_length: 20
+          threshold: -3.5
+        value: 0.0
+      - name: medium
+        completion_criteria:
+          measure: reward
+          behavior: TankyBrain
+          signal_smoothing: true
+          min_lesson_length: 20
+          threshold: -2.5
+        value: 1.0
+      - name: far
+        value: 2.0

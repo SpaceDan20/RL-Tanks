@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.MLAgents;
 
 [System.Serializable]
 public class ObstacleEntry
@@ -22,10 +23,19 @@ public class EnvironmentManager: MonoBehaviour
     public float minDistanceFromTanks; // Minimum distance from tanks to spawn obstacles
 
     [Header("Tanks")]
-    public Transform[] teamASpawnPoints;
-    public Transform[] teamBSpawnPoints;
     public TankyAgent[] teamATanks;
     public TankyAgent[] teamBTanks;
+
+    [Header("Spawn Points")]
+    public float spawnAngles = 90f; // Angle range for spawning tanks (e.g., 45 degrees means tanks can spawn within a 90-degree arc)
+    public Transform[] teamACloseSpawnPoints;
+    public Transform[] teamBCloseSpawnPoints;
+    public Transform[] teamAMidSpawnPoints;
+    public Transform[] teamBMidSpawnPoints;
+    public Transform[] teamAFarSpawnPoints;
+    public Transform[] teamBFarSpawnPoints;
+    private Transform[] teamASpawnPoints; // Current spawn points for team A based on difficulty
+    private Transform[] teamBSpawnPoints; // Current spawn points for team B based on difficulty
 
     private List<GameObject> spawnedObstacles = new List<GameObject>(); // List to keep track of spawned obstacles
     private bool episodeResetHandled = false; // Flag to ensure episode reset is handled only once
@@ -107,8 +117,21 @@ public class EnvironmentManager: MonoBehaviour
         }
     }
 
+    private Transform[] GetSpawnPoints(Transform[] close, Transform[] mid, Transform[] far)
+    {
+        // Get the current difficulty level from the environment parameters
+        float difficulty = Academy.Instance.EnvironmentParameters.GetWithDefault("spawn_difficulty", 0f);
+
+        if (difficulty < 0.5f) return close;
+        if (difficulty < 1.5f) return mid;
+        return far;
+    }
+
     public void SpawnTanks()
     {
+        Transform[] teamASpawnPoints = GetSpawnPoints(teamACloseSpawnPoints, teamAMidSpawnPoints, teamAFarSpawnPoints);
+        Transform[] teamBSpawnPoints = GetSpawnPoints(teamBCloseSpawnPoints, teamBMidSpawnPoints, teamBFarSpawnPoints);
+
         // Shuffle team A spawn points
         List<int> teamAIndices = new List<int>();
         for (int i = 0; i < teamASpawnPoints.Length; i++)
@@ -138,15 +161,17 @@ public class EnvironmentManager: MonoBehaviour
         // Assign team A tanks to shuffled spawn points
         for (int i = 0; i < teamATanks.Length; i++)
         {
+            float teamAAngle = Random.Range(180 - (spawnAngles / 2), 180 + (spawnAngles / 2)); // from 180 degrees
             teamATanks[i].transform.position = teamASpawnPoints[teamAIndices[i]].position;
-            teamATanks[i].transform.rotation = teamASpawnPoints[teamAIndices[i]].rotation;
+            teamATanks[i].transform.rotation = Quaternion.Euler(0, teamAAngle, 0);
         }
 
         // Assign team B tanks to shuffled spawn points
         for (int i = 0; i < teamBTanks.Length; i++)
         {
+            float teamBAngle = Random.Range(-spawnAngles / 2, spawnAngles / 2); // from 0 degrees
             teamBTanks[i].transform.position = teamBSpawnPoints[teamBIndices[i]].position;
-            teamBTanks[i].transform.rotation = teamBSpawnPoints[teamBIndices[i]].rotation;
+            teamBTanks[i].transform.rotation = Quaternion.Euler(0, teamBAngle, 0);
         }
     }
 
