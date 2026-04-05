@@ -1,4 +1,3 @@
-using System.Collections;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
@@ -27,11 +26,11 @@ public class TankyAgent : Agent
 
     [Header("Combat")]
     public float shellDamage = 50f;
+    public float shellSpeed = 30f;
     public float gunReloadTime = 5f;
     public Transform barrelTip;
+    public GameObject shellPrefab;
     private float fireCooldown;
-    private LineRenderer shotLine;
-    public float shotLineDuration = 1f;
 
     [Header("Sensors")]
     public LayerMask detectionLayers;
@@ -63,14 +62,6 @@ public class TankyAgent : Agent
         accelerationRate = maxSpeed / accelerationTime;
         decelerationRate = maxSpeed / decelerationTime;
         brakeRate = decelerationRate * brakeMultiplier;
-        shotLine = gameObject.AddComponent<LineRenderer>();
-        shotLine.startWidth = 0.5f;
-        shotLine.endWidth = 0.4f;
-        shotLine.material = new Material(Shader.Find("Sprites/Default"));
-        shotLine.startColor = new Color(1f, 0.5f, 0f, 0.8f);
-        shotLine.endColor = new Color(1f, 0.5f, 0f, 0f);
-        shotLine.enabled = false;
-        shotLine.useWorldSpace = true;
     }
 
     public override void OnEpisodeBegin()
@@ -185,27 +176,10 @@ public class TankyAgent : Agent
             // Able to fire
             if (fireAction == 1)
             {
-                Vector3 dir = barrelTip.forward; // direction the barrel is pointing
-                RaycastHit hit;
-                bool hitSomething = Physics.Raycast(barrelTip.position, dir, out hit, 1000f, detectionLayers);
-                Vector3 shotEnd = hitSomething ? hit.point : barrelTip.position + barrelTip.forward * gunSensorRange;
-                StartCoroutine(ShowShotLine(barrelTip.position, shotEnd));
-                if (hitSomething && hit.collider.CompareTag("Tank"))
-                {
-                    Debug.Log($"{gameObject.name} hit {hit.collider.gameObject.name} at distance {hit.distance:F2}");
-                    // Hit an enemy, apply damage and reward
-                    TankHealth enemyHealth = hit.collider.GetComponent<TankHealth>();
-                    if (enemyHealth != null)
-                    {
-                        enemyHealth.TakeDamage(shellDamage);
-                        AddReward(0.5f); // Reward for hitting an enemy
-                    }
-                }
-                else
-                {
-                    AddReward(-0.05f); // Missed shot penalty to encourage accuracy
-                }
-                fireCooldown = gunReloadTime; // reset cooldown
+                GameObject shellObj = Instantiate(shellPrefab, barrelTip.position, barrelTip.rotation);
+                TankShell shell = shellObj.GetComponent<TankShell>();
+                shell.Initialize(this, shellSpeed, shellDamage);
+                fireCooldown = gunReloadTime;
             }
         }
 
@@ -353,19 +327,10 @@ public class TankyAgent : Agent
         DrawSensorGizmos(transform, hullSensorAngle, hullSensorRange, hullSensors, -180f, new Color(0f, 0f, 1f, 0.1f));
     }
 
-    private IEnumerator ShowShotLine(Vector3 start, Vector3 end)
-    {
-        // Visual feedback for firing - shows a line from the barrel tip to the hit point for a brief moment
-        shotLine.SetPosition(0, start);
-        shotLine.SetPosition(1, end);
-        shotLine.enabled = true;
-        yield return new WaitForSeconds(shotLineDuration);
-        shotLine.enabled = false;
-    }
-
     public override void Heuristic(in ActionBuffers actionsOut)
     {
         var ca = actionsOut.ContinuousActions;
+        var da = actionsOut.DiscreteActions;
 
         // W/S controls both tracks together (forward/back)
         float forward = Keyboard.current.wKey.isPressed ? 1f :
@@ -379,5 +344,6 @@ public class TankyAgent : Agent
         ca[1] = forward + turn;   // right track
         ca[2] = Keyboard.current.qKey.isPressed ? -1f :
                 Keyboard.current.eKey.isPressed ? 1f : 0f;  // turret
+        da[0] = Keyboard.current.spaceKey.isPressed ? 1 : 0; // fire
     }
 }

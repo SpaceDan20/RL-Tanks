@@ -242,6 +242,10 @@ PrefabInstance:
       propertyPath: environmentManager
       value: 
       objectReference: {fileID: 1539526396}
+    - target: {fileID: 4094379153230244169, guid: df8f957f672479a47a21715f11996485, type: 3}
+      propertyPath: m_BehaviorType
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4225910501082380903, guid: df8f957f672479a47a21715f11996485, type: 3}
       propertyPath: m_Name
       value: Tanky2
@@ -937,6 +941,12 @@ MonoBehaviour:
     (YAML) min_lesson_length: 50 -->
     100
 
+
+    A bit chaotic. Tanks struggle still, but the PBRS turret-aiming reward
+    clearly helped. Self-play will likely need to be tweaked, along with other YAML
+    settings.
+
+    --------------------------------
 
 
 '

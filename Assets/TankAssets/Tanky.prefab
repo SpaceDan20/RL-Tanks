@@ -275,9 +275,9 @@ MonoBehaviour:
     VectorActionDescriptions: []
     VectorActionSpaceType: 1
     hasUpgradedBrainParametersWithActionSpec: 1
-  m_Model: {fileID: 0}
+  m_Model: {fileID: 5022602860645237092, guid: e7658f2dd8d51bc4aa35172529e1beb7, type: 3}
   m_InferenceDevice: 0
-  m_BehaviorType: 0
+  m_BehaviorType: 1
   m_BehaviorName: TankyBrain
   TeamId: 0
   m_UseChildSensors: 1
@@ -309,9 +309,10 @@ MonoBehaviour:
   turret: {fileID: 4566673799919585451}
   turretRotationSpeed: 45
   shellDamage: 50
+  shellSpeed: 200
   gunReloadTime: 7
   barrelTip: {fileID: 6592340087048280225}
-  shotLineDuration: 10
+  shellPrefab: {fileID: 4518894913971674673, guid: 3e56a0549ace4f745a73437f5ba09c8a, type: 3}
   detectionLayers:
     serializedVersion: 2
     m_Bits: 55
