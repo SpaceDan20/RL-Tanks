@@ -26,6 +26,9 @@ public class EnvironmentManager: MonoBehaviour
     public TankyAgent[] teamATanks;
     public TankyAgent[] teamBTanks;
 
+    [Header("Capture Point")]
+    public CapturePoint capturePoint;
+
     [Header("Spawn Points")]
     public float spawnAngles = 90f; // Angle range for spawning tanks (e.g., 45 degrees means tanks can spawn within a 90-degree arc)
     public Transform[] teamACloseSpawnPoints;
@@ -51,6 +54,7 @@ public class EnvironmentManager: MonoBehaviour
         ClearObstacles(); // Clear existing obstacles
         SpawnTanks(); // Spawn tanks at their respective spawn points
         SpawnObstacles(); // Spawn new obstacles for the episode
+        if (capturePoint != null) capturePoint.ResetCapture();
     }
 
     public void ClearObstacles()
@@ -196,6 +200,23 @@ public class EnvironmentManager: MonoBehaviour
             teamBTanks[i].transform.position = teamBSpawnPoints[teamBIndices[i]].position;
             teamBTanks[i].transform.rotation = Quaternion.Euler(0, teamBAngle, 0);
         }
+    }
+
+    public void OnCapturePointCaptured(TankyAgent capturingAgent)
+    {
+        if (capturePoint != null)
+            capturePoint.ResetCapture();
+
+        foreach (TankyAgent enemy in GetAllEnemies(capturingAgent))
+            enemy.AddReward(-1f);
+
+        foreach (TankyAgent agent in teamATanks)
+            agent.EndEpisode();
+
+        foreach (TankyAgent agent in teamBTanks)
+            agent.EndEpisode();
+
+        ResetEpisode();
     }
 
     public void OnTankDestroyed(TankyAgent destroyedTank)

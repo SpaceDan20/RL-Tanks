@@ -86,3 +86,14 @@ min_lesson_length increased: 50 --> 100
 
 07 result:
 Chaotic. Tanks struggle still, but the PBRS turret aiming reward clearly helped. Tanks can now somewhat track their opponent with their turrets.
+
+---
+
+Run 08 --
+Hypothesis:
+The reward structure, PBRS turret aiming reward, and curriculum are all working. The agents may just need more steps overall. This run will also test if the agents can learn with the new projectile system over the prior raycast system.
+Changes:
+YAML max_steps increased: 500k --> 1M
+
+08 result:
+Tanks learned well and got effective until they advanced to the far spawns. Once they were too far away for their sensors to quickly pick up the enemy, their effectiveness dropped out.
