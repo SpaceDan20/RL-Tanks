@@ -206,18 +206,6 @@ public class TankyAgent : Agent
 
         // Step penalty
         AddReward(-0.001f);
-
-        // Discrete rewards:
-        // Kill, Hits
-
-        // Discrete penalties:
-        // Death, Getting hit, Missed shots, Step penalty
-
-        // PBRS:
-        // Turret aiming
-
-        // Considerations:
-        // Avoiding detection, avoiding obstacles, movement
     }
 
     private TankyAgent GetNearestEnemy()

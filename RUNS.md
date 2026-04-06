@@ -102,4 +102,4 @@ Tanks learned well and got effective until they advanced to the far spawns. Once
 
 Run 09 --
 Hypothesis:
-The tanks are struggling to learn movement, which is required once the spawnpoints are far enough away.
+The tanks are struggling to learn movement, which is required once the spawnpoints are far enough away. By adding a capture point and a big reward for capturing it, the tanks will have an incentive to move. Once curriculum advances to the far spawns, the tanks will likely have learned to move, eliminating the problem of not being able to find one another.

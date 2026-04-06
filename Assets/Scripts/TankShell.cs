@@ -62,15 +62,18 @@ public class TankShell : MonoBehaviour
                     firingAgent.AddReward(0.5f); // Reward for hitting an enemy
             }
         }
+        else
+        {
+            if (firingAgent != null)
+                firingAgent.AddReward(-0.05f); // Penalty for hitting an obstacle instead of a tank
+        }
 
         Destroy(gameObject);
     }
 
     private void OnDestroy()
     {
-        // If the shell expired without hitting anything, penalise the firer.
-        // hasHit covers both tank-hit and obstacle-hit cases so we only
-        // penalise a true miss (shell flew until its lifetime ran out).
+        // Penalise the firer if the shell expired without hitting anything at all.
         if (!hasHit && firingAgent != null)
             firingAgent.AddReward(-0.05f);
     }
