@@ -97,3 +97,9 @@ YAML max_steps increased: 500k --> 1M
 
 08 result:
 Tanks learned well and got effective until they advanced to the far spawns. Once they were too far away for their sensors to quickly pick up the enemy, their effectiveness dropped out.
+
+---
+
+Run 09 --
+Hypothesis:
+The tanks are struggling to learn movement, which is required once the spawnpoints are far enough away.

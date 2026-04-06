@@ -50,14 +50,18 @@ public class TankyAgent : Agent
     [Header("References")]
     public Transform environmentCenter;
     public EnvironmentManager environmentManager;
+    public CapturePoint capturePoint;
+    public float maxCapturePointDistance = 60f;
 
     private Rigidbody rb;
+    private TankHealth tankHealth;
     private float previousAlignmentPotential;
     private bool enemyInSight;
 
     public override void Initialize()
     {
         rb = GetComponent<Rigidbody>();
+        tankHealth = GetComponent<TankHealth>();
         rb.sleepThreshold = 0.01f;
         accelerationRate = maxSpeed / accelerationTime;
         decelerationRate = maxSpeed / decelerationTime;
@@ -91,6 +95,11 @@ public class TankyAgent : Agent
     public override void CollectObservations(VectorSensor sensor)
     {
         enemyInSight = false; // Reset enemy in sight flag at the start of observation collection
+        sensor.AddObservation(tankHealth.NormalizedHealth); // Health as a normalized value [0, 1]
+        float captureDistance = Vector3.Distance(transform.position, capturePoint.transform.position);
+        sensor.AddObservation(Mathf.Clamp01(captureDistance / maxCapturePointDistance)); // Normalized distance to capture point
+        sensor.AddObservation(capturePoint.IsBeingCapturedBy(this) ? 1f : 0f);           // 1 if this agent is capturing
+        sensor.AddObservation(capturePoint.IsBeingCapturedByEnemy(this) ? 1f : 0f);      // 1 if an enemy is capturing
         // Gun sensors for detecting enemies and obstacles in the firing arc
         CastSensorArray(sensor, turret, gunSensorAngle, gunSensorRange, gunSensors, 0f); // Centered on turret forward
         // Turret sensors for situational awareness around the turret

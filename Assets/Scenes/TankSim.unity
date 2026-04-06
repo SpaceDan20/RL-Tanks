@@ -1194,7 +1194,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca562e60f7d4cfd4e9085a789c56767b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectNotes
-  notes: Write your notes here...
+  notes: 'TODO:
+
+    Add observations related to the capture point.'
 --- !u!4 &1459984442
 Transform:
   m_ObjectHideFlags: 0
@@ -2425,6 +2427,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1234955913086893967, guid: df8f957f672479a47a21715f11996485, type: 3}
+      propertyPath: capturePoint
+      value: 
+      objectReference: {fileID: 1251531771}
+    - target: {fileID: 1234955913086893967, guid: df8f957f672479a47a21715f11996485, type: 3}
       propertyPath: environmentCenter
       value: 
       objectReference: {fileID: 2782972996895369820}
@@ -2432,6 +2438,14 @@ PrefabInstance:
       propertyPath: environmentManager
       value: 
       objectReference: {fileID: 1539526396}
+    - target: {fileID: 1234955913086893967, guid: df8f957f672479a47a21715f11996485, type: 3}
+      propertyPath: maxCapturePointDistance
+      value: 141
+      objectReference: {fileID: 0}
+    - target: {fileID: 4094379153230244169, guid: df8f957f672479a47a21715f11996485, type: 3}
+      propertyPath: m_BrainParameters.VectorObservationSize
+      value: 208
+      objectReference: {fileID: 0}
     - target: {fileID: 4225910501082380903, guid: df8f957f672479a47a21715f11996485, type: 3}
       propertyPath: m_Name
       value: Tanky1

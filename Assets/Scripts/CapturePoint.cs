@@ -68,6 +68,17 @@ public class CapturePoint : MonoBehaviour
         environmentManager.OnCapturePointCaptured(capturingAgent);
     }
 
+    public bool IsBeingCapturedBy(TankyAgent agent)
+    {
+        return tanksInZone.Count == 1 && capturingAgent == agent;
+    }
+
+    public bool IsBeingCapturedByEnemy(TankyAgent agent)
+    {
+        if (tanksInZone.Count != 1) return false;
+        return capturingAgent != null && capturingAgent != agent;
+    }
+
     public void ResetCapture()
     {
         tanksInZone.Clear();

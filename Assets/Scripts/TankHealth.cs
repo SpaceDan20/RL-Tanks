@@ -7,6 +7,7 @@ public class TankHealth : MonoBehaviour
     [Header("Health")]
     public float maxHealth = 100f;
     private float currentHealth;
+    public float NormalizedHealth => currentHealth / maxHealth;
 
     private void Awake()
     {

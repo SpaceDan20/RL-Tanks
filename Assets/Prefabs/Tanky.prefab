@@ -266,7 +266,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.ML-Agents::Unity.MLAgents.Policies.BehaviorParameters
   m_BrainParameters:
-    VectorObservationSize: 204
+    VectorObservationSize: 208
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 3
@@ -275,7 +275,7 @@ MonoBehaviour:
     VectorActionDescriptions: []
     VectorActionSpaceType: 1
     hasUpgradedBrainParametersWithActionSpec: 1
-  m_Model: {fileID: 5022602860645237092, guid: cf3220c71c3750e479b58c9e4dcb6ef6, type: 3}
+  m_Model: {fileID: 0}
   m_InferenceDevice: 0
   m_BehaviorType: 0
   m_BehaviorName: TankyBrain
@@ -330,6 +330,8 @@ MonoBehaviour:
   hullSensorAngle: 240
   environmentCenter: {fileID: 0}
   environmentManager: {fileID: 0}
+  capturePoint: {fileID: 0}
+  maxCapturePointDistance: 141
 --- !u!114 &681566040798514997
 MonoBehaviour:
   m_ObjectHideFlags: 0
