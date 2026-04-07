@@ -315,7 +315,7 @@ MonoBehaviour:
   shellPrefab: {fileID: 4518894913971674673, guid: 3e56a0549ace4f745a73437f5ba09c8a, type: 3}
   detectionLayers:
     serializedVersion: 2
-    m_Bits: 55
+    m_Bits: 31
   gunSensors: 15
   gunSensorRange: 150
   gunSensorAngle: 12
@@ -328,6 +328,7 @@ MonoBehaviour:
   hullSensors: 16
   hullSensorRange: 5
   hullSensorAngle: 240
+  debugLogging: 1
   environmentCenter: {fileID: 0}
   environmentManager: {fileID: 0}
   capturePoint: {fileID: 0}

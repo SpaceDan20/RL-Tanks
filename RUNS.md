@@ -103,3 +103,31 @@ Tanks learned well and got effective until they advanced to the far spawns. Once
 Run 09 --
 Hypothesis:
 The tanks are struggling to learn movement, which is required once the spawnpoints are far enough away. By adding a capture point and a big reward for capturing it, the tanks will have an incentive to move. Once curriculum advances to the far spawns, the tanks will likely have learned to move, eliminating the problem of not being able to find one another.
+
+Changes:
+
+- Added capture point
+- New reward for capturing point: +1f
+- New penalty for losing point: -1f
+- Missed shot now counts all missed shots
+- Observation for own health added
+- Observation for distance to capture point added
+- Observation for agent capturing added
+- Observation for enemy capturing added
+- Total observation space increased: 204 --> 208
+
+09 result:
+The tanks struggled to learn movement still. Although they occasionally captured the point, they did not develop the movement behavior necessary to consistently capture the point. Most episodes ended by timeout or kills.
+
+---
+
+Run 10 --
+Hypothesis:
+The sparse reward structure for capturing the point, combined with the overall complexity of the learning task at hand, likely made it very difficult for the agent to learn that moving toward the capture point is a good behavior. The added complexity of the capture point may need a curriculum adjustment in the future. For now, a simple PBRS reward for closing distance to the capture point may introduce movement finally.
+
+Changes:
+
+- Added new PBRS reward for closing distance to the capture circle.
+
+10 result:
+TBD

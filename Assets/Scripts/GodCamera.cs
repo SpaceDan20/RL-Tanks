@@ -105,7 +105,7 @@ public class GodCamera : MonoBehaviour
         if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed)
             move -= transform.right * speed;
 
-        transform.position += move * Time.deltaTime;
+        transform.position += move * Time.unscaledDeltaTime;
         ClampHeight();
     }
 
@@ -118,8 +118,7 @@ public class GodCamera : MonoBehaviour
 
         Vector2 current = mouse.position.ReadValue();
         Vector2 delta   = current - lastMousePosition;
-        Vector3 pan     = (delta.x * -transform.right + delta.y * -FlatForward())
-                          * panSensitivity * Time.deltaTime;
+        Vector3 pan     = panSensitivity * Time.unscaledDeltaTime * (delta.x * -transform.right + delta.y * -FlatForward());
         transform.position += pan;
         ClampHeight();
         lastMousePosition = current;
@@ -131,7 +130,7 @@ public class GodCamera : MonoBehaviour
         if (scroll == 0f) return;
 
         Vector3 pos = transform.position;
-        pos.y -= scroll * scrollSpeed * Time.deltaTime;
+        pos.y -= scroll * scrollSpeed * Time.unscaledDeltaTime;
         pos.y  = Mathf.Clamp(pos.y, minHeight, maxHeight);
         transform.position = pos;
     }

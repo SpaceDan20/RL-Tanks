@@ -235,6 +235,14 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1234955913086893967, guid: df8f957f672479a47a21715f11996485, type: 3}
+      propertyPath: capturePoint
+      value: 
+      objectReference: {fileID: 1251531775}
+    - target: {fileID: 1234955913086893967, guid: df8f957f672479a47a21715f11996485, type: 3}
+      propertyPath: debugLogging
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1234955913086893967, guid: df8f957f672479a47a21715f11996485, type: 3}
       propertyPath: environmentCenter
       value: 
       objectReference: {fileID: 2782972996895369820}
@@ -242,10 +250,6 @@ PrefabInstance:
       propertyPath: environmentManager
       value: 
       objectReference: {fileID: 1539526396}
-    - target: {fileID: 4094379153230244169, guid: df8f957f672479a47a21715f11996485, type: 3}
-      propertyPath: m_BehaviorType
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 4225910501082380903, guid: df8f957f672479a47a21715f11996485, type: 3}
       propertyPath: m_Name
       value: Tanky2
@@ -708,7 +712,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1031085974}
   - component: {fileID: 1031085975}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Slider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -924,7 +928,7 @@ GameObject:
   - component: {fileID: 1251531774}
   - component: {fileID: 1251531773}
   - component: {fileID: 1251531772}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: CapturePoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1085,7 +1089,7 @@ GameObject:
   - component: {fileID: 1379543960}
   - component: {fileID: 1379543962}
   - component: {fileID: 1379543961}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1196,7 +1200,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProjectNotes
   notes: 'TODO:
 
-    Add observations related to the capture point.'
+    Run 09'
 --- !u!4 &1459984442
 Transform:
   m_ObjectHideFlags: 0
@@ -1686,7 +1690,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1815510606}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Fill Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1878,7 +1882,7 @@ GameObject:
   - component: {fileID: 1864730915}
   - component: {fileID: 1864730917}
   - component: {fileID: 1864730916}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Fill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2052,7 +2056,7 @@ GameObject:
   - component: {fileID: 2119888261}
   - component: {fileID: 2119888259}
   - component: {fileID: 2119888258}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: HUD
   m_TagString: Untagged
   m_Icon: {fileID: 0}

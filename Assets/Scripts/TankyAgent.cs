@@ -47,6 +47,9 @@ public class TankyAgent : Agent
     public float hullSensorRange = 5f;
     public float hullSensorAngle = 240f;
 
+    [Header("Debug")]
+    public bool debugLogging = false;
+
     [Header("References")]
     public Transform environmentCenter;
     public EnvironmentManager environmentManager;
@@ -56,6 +59,9 @@ public class TankyAgent : Agent
     private Rigidbody rb;
     private TankHealth tankHealth;
     private float previousAlignmentPotential;
+    private float previousCapturePointPotential;
+    private float episodeAlignmentReward;
+    private float episodeCapturePointReward;
     private bool enemyInSight;
 
     public override void Initialize()
@@ -78,18 +84,27 @@ public class TankyAgent : Agent
         // Reset firing cooldown
         fireCooldown = 0f;
 
-        // Reset alignment potential tracking and enemy sight flag
-        previousAlignmentPotential = 0f;
         enemyInSight = false;
 
+        // Log and reset per-episode PBRS totals
+        if (debugLogging)
+            Debug.Log($"[{gameObject.name}] Episode ended — Alignment PBRS: {episodeAlignmentReward:F4} | CapturePoint PBRS: {episodeCapturePointReward:F4}");
+        episodeAlignmentReward = 0f;
+        episodeCapturePointReward = 0f;
+
         // Reset health
-        GetComponent<TankHealth>().ResetHealth();
+        tankHealth.ResetHealth();
 
         // Reset episode in the environment manager to reposition tanks and reset any necessary state
         environmentManager.ResetEpisode();
 
-        // Reset turret rotation 
+        // Reset turret rotation
         turret.localRotation = Quaternion.identity;
+
+        // Seed previous potentials from actual starting state so the first shaping
+        // step reflects real improvement rather than a jump from zero
+        previousCapturePointPotential = GetCapturePointPotential();
+        previousAlignmentPotential = GetAlignmentPotential();
     }
 
     public override void CollectObservations(VectorSensor sensor)
@@ -192,17 +207,20 @@ public class TankyAgent : Agent
             }
         }
 
-        if (enemyInSight) // Only calculate alignment potential if an enemy is detected in the sensor arrays
+        if (enemyInSight) // Only calculate turret alignment potential if an enemy is detected in the sensor arrays
         {
             float currentAlignmentPotential = GetAlignmentPotential();
             float alignmentShaping = (0.99f * currentAlignmentPotential) - previousAlignmentPotential;
-            AddReward(alignmentShaping * 0.1f); // Reward for improving alignment with nearest enemy, scaled down
+            AddReward(alignmentShaping * 0.01f); // Reward for improving turret alignment with nearest enemy, scaled down
+            episodeAlignmentReward += alignmentShaping * 0.01f;
             previousAlignmentPotential = currentAlignmentPotential;
         }
-        else
-        {
-            previousAlignmentPotential = 0f;
-        }
+
+        float currentCapturePointPotential = GetCapturePointPotential();
+        float capturePointShaping = (0.99f * currentCapturePointPotential) - previousCapturePointPotential;
+        AddReward(capturePointShaping * 0.01f); // Reward for moving closer to the capture point, scaled down
+        episodeCapturePointReward += capturePointShaping * 0.01f;
+        previousCapturePointPotential = currentCapturePointPotential;
 
         // Step penalty
         AddReward(-0.001f);
@@ -224,6 +242,12 @@ public class TankyAgent : Agent
         }
 
         return nearest;
+    }
+
+    private float GetCapturePointPotential()
+    {
+        float distance = Vector3.Distance(transform.position, capturePoint.transform.position);
+        return 1f - Mathf.Clamp01(distance / maxCapturePointDistance);
     }
 
     private float GetAlignmentPotential()
