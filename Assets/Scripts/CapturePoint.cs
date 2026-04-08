@@ -69,6 +69,8 @@ public class CapturePoint : MonoBehaviour
         environmentManager.OnCapturePointCaptured(capturingAgent);
     }
 
+    public float CaptureProgress => captureProgress;
+
     public bool IsBeingCapturedBy(TankyAgent agent)
     {
         return tanksInZone.Count == 1 && capturingAgent == agent;

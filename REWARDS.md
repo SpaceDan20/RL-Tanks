@@ -12,17 +12,21 @@ Lose the capture point: -1f | EnvironmentManager.cs | OnCapturePointCaptured()
 
 # Continuous Rewards
 
-Turret alignment: PBRS | TankyAgent.cs | OnActionReceived(), gated behind enemyInSight
+Capture point progress: 0.1f | TankyAgent.cs | OnActionReceived()
+Capture point distance: ~0.005f max | TankyAgent.cs | OnActionReceived()
+Turret alignment: ~0.006f max | TankyAgent.cs | OnActionReceived(), gated behind enemyInSight
 Step penalty: -0.001f naive | TankyAgent.cs | OnActionReceived()
 
 # Perfect Episode Estimate
 
 Capture +1f
 1 hit +0.5f
-Turret alignment ~+0.05f (need to observe)
+Capture distance ~+1f (crossed map to capture the point)
+Capture progress +1f (captured point completely)
+Turret alignment +0.25f
 Step penalty ~-0.3f
 
-Total: 1.25
+Total: 3.45f
 
 # Worst Episode Estimate
 
@@ -30,9 +34,11 @@ Lost capture point -1f
 Hit by enemy -0.25f
 Missed shots -1f
 Step penalty ~-4.5f
+Capture distance ~-1f (crossed map to run away like a coward!)
+Turret alignment -0.25f
 
-Total: -6.75
+Total: -8f
 
 # Long-term considerations
 
-Avoiding detection, avoiding obstacles, movement
+Avoiding detection, avoiding obstacles

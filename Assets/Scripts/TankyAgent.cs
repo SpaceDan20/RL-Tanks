@@ -59,9 +59,11 @@ public class TankyAgent : Agent
     private Rigidbody rb;
     private TankHealth tankHealth;
     private float previousAlignmentPotential;
-    private float previousCapturePointPotential;
+    private float previousCapturePointDistance;
+    private float previousCaptureProgress;
     private float episodeAlignmentReward;
     private float episodeCapturePointReward;
+    private float episodeCaptureProgressReward;
     private bool enemyInSight;
 
     public override void Initialize()
@@ -88,9 +90,10 @@ public class TankyAgent : Agent
 
         // Log and reset per-episode PBRS totals
         if (debugLogging)
-            Debug.Log($"[{gameObject.name}] Episode ended — Alignment PBRS: {episodeAlignmentReward:F4} | CapturePoint PBRS: {episodeCapturePointReward:F4}");
+            Debug.Log($"[{gameObject.name}] Episode ended — Alignment PBRS: {episodeAlignmentReward:F4} | CapturePoint Distance: {episodeCapturePointReward:F4} | CapturePoint Progress: {episodeCaptureProgressReward:F4}");
         episodeAlignmentReward = 0f;
         episodeCapturePointReward = 0f;
+        episodeCaptureProgressReward = 0f;
 
         // Reset health
         tankHealth.ResetHealth();
@@ -103,8 +106,9 @@ public class TankyAgent : Agent
 
         // Seed previous potentials from actual starting state so the first shaping
         // step reflects real improvement rather than a jump from zero
-        previousCapturePointPotential = GetCapturePointPotential();
+        previousCapturePointDistance = Vector3.Distance(transform.position, capturePoint.transform.position);
         previousAlignmentPotential = GetAlignmentPotential();
+        previousCaptureProgress = 0f;
     }
 
     public override void CollectObservations(VectorSensor sensor)
@@ -207,20 +211,35 @@ public class TankyAgent : Agent
             }
         }
 
-        if (enemyInSight) // Only calculate turret alignment potential if an enemy is detected in the sensor arrays
+        if (enemyInSight) // Only reward turret alignment improvement when an enemy is detected in the sensor arrays
         {
             float currentAlignmentPotential = GetAlignmentPotential();
-            float alignmentShaping = (0.99f * currentAlignmentPotential) - previousAlignmentPotential;
-            AddReward(alignmentShaping * 0.01f); // Reward for improving turret alignment with nearest enemy, scaled down
-            episodeAlignmentReward += alignmentShaping * 0.01f;
+            float alignmentReward = (currentAlignmentPotential - previousAlignmentPotential) * 0.25f;
+            AddReward(alignmentReward);
+            episodeAlignmentReward += alignmentReward;
             previousAlignmentPotential = currentAlignmentPotential;
         }
 
-        float currentCapturePointPotential = GetCapturePointPotential();
-        float capturePointShaping = (0.99f * currentCapturePointPotential) - previousCapturePointPotential;
-        AddReward(capturePointShaping * 0.01f); // Reward for moving closer to the capture point, scaled down
-        episodeCapturePointReward += capturePointShaping * 0.01f;
-        previousCapturePointPotential = currentCapturePointPotential;
+        // Reward shaping for moving towards the capture point
+        float currentCapturePointDistance = Vector3.Distance(transform.position, capturePoint.transform.position);
+        float capturePointReward = (previousCapturePointDistance - currentCapturePointDistance) / maxCapturePointDistance;
+        AddReward(capturePointReward);
+        episodeCapturePointReward += capturePointReward;
+        previousCapturePointDistance = currentCapturePointDistance;
+
+        // Reward shaping for capture progress (only while this agent is capturing)
+        if (capturePoint.IsBeingCapturedBy(this))
+        {
+            float currentCaptureProgress = capturePoint.CaptureProgress;
+            float captureProgressReward = (currentCaptureProgress - previousCaptureProgress) / capturePoint.captureTime;
+            AddReward(captureProgressReward);
+            episodeCaptureProgressReward += captureProgressReward;
+            previousCaptureProgress = currentCaptureProgress;
+        }
+        else
+        {
+            previousCaptureProgress = 0f; // Reset silently so the next capture starts without a spike
+        }
 
         // Step penalty
         AddReward(-0.001f);
@@ -244,14 +263,9 @@ public class TankyAgent : Agent
         return nearest;
     }
 
-    private float GetCapturePointPotential()
+private float GetAlignmentPotential()
     {
-        float distance = Vector3.Distance(transform.position, capturePoint.transform.position);
-        return 1f - Mathf.Clamp01(distance / maxCapturePointDistance);
-    }
-
-    private float GetAlignmentPotential()
-    {
+        // Calculate how well the turret is aligned with the nearest enemy (1 = perfectly aligned, 0 = opposite direction)
         TankyAgent nearestEnemy = GetNearestEnemy();
         if (nearestEnemy == null) return 0f;
 

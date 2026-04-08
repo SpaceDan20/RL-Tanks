@@ -127,7 +127,22 @@ The sparse reward structure for capturing the point, combined with the overall c
 
 Changes:
 
-- Added new PBRS reward for closing distance to the capture circle.
+- Added new PBRS reward for closing distance to the capture circle
+- Lower strength multiplier of PBRS rewards
 
 10 result:
+The agents were doing well and learning reliably up until the spawn distance increased from close to medium, as seen in other runs. They did not learn how to reliably capture the point, but they did learn how to center their turrets once an enemy was detected.
+
+---
+
+Run 11 --
+Hypothesis:
+The sparse reward for capturing a point (+1f) after a long ten seconds makes it hard for the agents to learn that capturing a point is a good behavior. It is also overshadowed by destroying an enemy, as that rewards the agent more (+1.5f just in discrete rewards). The environment is inherently complex and may need a staged approach. More importantly, the PBRS rewards are not optimal for the scenario. Turret alignment does not guarantee an immediate episode finish, and neither does closing distance, which makes the 'optimal' states not fully optimal. The gamma discount factor causes the shaped rewards to almost always come out negative. Changing out the PBRS rewards for naive-shaped rewards that still use potential-based logic should fix the overall reward structure problem. An additional continuous reward for capture zone progress will also solve the credit assignment problem of the agent previously having to wait 10s for a small 1f reward.
+
+Changes:
+
+- Converted turret alignment and capture point distance PBRS rewards to naive rewards
+- Added continuous capture progress reward
+
+11 result:
 TBD
