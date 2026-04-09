@@ -121,14 +121,15 @@ public class EnvironmentManager: MonoBehaviour
         }
     }
 
+    public bool CombatEnabled =>
+        Academy.Instance.EnvironmentParameters.GetWithDefault("stages", 0f) >= 1.5f;
+
     private Transform[] GetSpawnPoints(Transform[] close, Transform[] mid, Transform[] far)
     {
-        // Get the current difficulty level from the environment parameters
-        float difficulty = Academy.Instance.EnvironmentParameters.GetWithDefault("spawn_difficulty", 0f);
-
-        if (difficulty < 0.5f) return close;
-        if (difficulty < 1.5f) return mid;
-        return far;
+        float stage = Academy.Instance.EnvironmentParameters.GetWithDefault("stages", 0f);
+        if (stage < 0.5f) return close;  // capture_only
+        if (stage < 2.5f) return mid;    // capture_only_medium + capture_and_combat
+        return far;                       // capture_and_combat_far
     }
 
     public List<TankyAgent> GetAllEnemies(TankyAgent requestingAgent)
@@ -208,7 +209,7 @@ public class EnvironmentManager: MonoBehaviour
             capturePoint.ResetCapture();
 
         foreach (TankyAgent enemy in GetAllEnemies(capturingAgent))
-            enemy.AddReward(-1f);
+            enemy.AddReward(-1.5f);
 
         foreach (TankyAgent agent in teamATanks)
             agent.EndEpisode();
@@ -225,13 +226,13 @@ public class EnvironmentManager: MonoBehaviour
 
         foreach (TankyAgent agent in teamATanks)
         {
-            agent.AddReward(agent == destroyedTank ? -0.5f : 0.5f);
+            agent.AddReward(agent == destroyedTank ? -1f : 1f);
             agent.EndEpisode();
         }
 
         foreach (TankyAgent agent in teamBTanks)
         {
-            agent.AddReward(agent == destroyedTank ? -0.5f : 0.5f);
+            agent.AddReward(agent == destroyedTank ? -1f : 1f);
             agent.EndEpisode();
         }
         ResetEpisode();

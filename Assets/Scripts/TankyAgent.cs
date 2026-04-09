@@ -197,9 +197,9 @@ public class TankyAgent : Agent
             turret.Rotate(0, turretRotation * turretRotationSpeed * Time.deltaTime, 0);
         }
 
-        // Discrete action for firing
+        // Discrete action for firing (only allowed when combat is enabled by the curriculum)
         int fireAction = actions.DiscreteActions[0]; // 0 = no fire, 1 = fire
-        if (fireCooldown <= 0.01f)
+        if (environmentManager.CombatEnabled && fireCooldown <= 0.01f)
         {
             // Able to fire
             if (fireAction == 1)
@@ -211,7 +211,7 @@ public class TankyAgent : Agent
             }
         }
 
-        if (enemyInSight) // Only reward turret alignment improvement when an enemy is detected in the sensor arrays
+        if (enemyInSight && environmentManager.CombatEnabled) // Only reward turret alignment improvement when an enemy is detected in the sensor arrays and combat is enabled
         {
             float currentAlignmentPotential = GetAlignmentPotential();
             float alignmentReward = (currentAlignmentPotential - previousAlignmentPotential) * 0.25f;
@@ -222,7 +222,7 @@ public class TankyAgent : Agent
 
         // Reward shaping for moving towards the capture point
         float currentCapturePointDistance = Vector3.Distance(transform.position, capturePoint.transform.position);
-        float capturePointReward = (previousCapturePointDistance - currentCapturePointDistance) / maxCapturePointDistance;
+        float capturePointReward = (previousCapturePointDistance - currentCapturePointDistance) / maxCapturePointDistance * 0.5f;
         AddReward(capturePointReward);
         episodeCapturePointReward += capturePointReward;
         previousCapturePointDistance = currentCapturePointDistance;
@@ -242,7 +242,7 @@ public class TankyAgent : Agent
         }
 
         // Step penalty
-        AddReward(-0.001f);
+        AddReward(-0.00035f);
     }
 
     private TankyAgent GetNearestEnemy()

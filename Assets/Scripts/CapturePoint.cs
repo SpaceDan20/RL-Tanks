@@ -65,7 +65,7 @@ public class CapturePoint : MonoBehaviour
         Debug.Log($"Capture Point captured by {capturingAgent.name}!");
         captured = true;
         if (captureSlider != null) captureSlider.value = 1f;
-        capturingAgent.AddReward(1f);
+        capturingAgent.AddReward(2f);
         environmentManager.OnCapturePointCaptured(capturingAgent);
     }
 

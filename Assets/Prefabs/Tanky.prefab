@@ -299,7 +299,7 @@ MonoBehaviour:
   agentParameters:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
-  MaxStep: 5000
+  MaxStep: 3000
   maxSpeed: 7
   accelerationTime: 4
   decelerationTime: 2

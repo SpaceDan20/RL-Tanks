@@ -171,3 +171,51 @@ The sparse reward for capturing a point (+1f) after a long ten seconds makes it 
 Search behavior has emerged. When an agent cannot see the enemy, he will spin his turret around until he can find them. The agents did learn to move more at first, but after they moved from close to medium spawns, they quit moving to prioritize finding the enemy. The overall reward structure seems to be working, but the agents struggle with the complex environment. A staged curriculum approach would be best to introduce a natural flow (learn to move --> learn to capture --> learn to engage enemies in combat)
 
 ## Run 12
+
+### Hypothesis:
+
+The environment and reward structure are too complex for the agent to learn outright. The current reward structure is optimized for capturing (+3f max) over combat (+1.75f max), but the agent is likely to learn pure combat over capturing given the complexity of movement required to reach and capture the zone. By introducing a staged curriculum (capture only --> capture from farther away --> capture & combat --> capture & combat from afar), the agent should, hypothetically, learn to capture before all else. Once combat is enabled, emergent behaviors for contesting the point should naturally start to develop.
+
+### Changes:
+
+- Introduced a new, staged curriculum where combat is disabled until 400,000 steps (~halfway through training).
+  - Only capture-point rewards can be achieved until combat is enabled
+  - Spawn points still follow close --> medium --> far, where combat is introduced at medium distances
+
+### Results:
+
+Epic fail. The agents failed to learn capturing, even after 250k steps of spawning right next to the point. Once combat was enabled at 400k steps, they slowly learned how to destroy one another to optimize their rewards. The agents didn't grow very capable in any aspect throughout the 750k step run.
+
+## Run 13
+
+### Hypothesis:
+
+The max step per episode is currently 5000 steps, or 100 seconds, at a Unity fixed timestep of 0.02 (50 updates per second). Lowering this to 3000 steps, 1 minute exactly, would reflect the environment better, as it only takes ~30 seconds maximum to capture a point when spawning from afar in an optimal scenario, where the agent is perfect. The extra 40 seconds is more often than not wasted, simply accumulating step penalties for an agent that cannot find the capture point. Lowering the max steps will allow for more episodes, and hopefully, more learning. If the agents still can't learn in the allotted 400k combat-disabled steps, reward magnitudes will likely need adjustment.
+
+### Changes:
+
+- Lower max steps per episode: 5000 --> 3000
+
+### Results:
+
+No improvements. Like run 12, the tanks failed to learn capturing, movement, and any meaningful combat.
+
+## Run 14
+
+### Hypothesis:
+
+The reward magnitudes and overall structure are likely broken. With a worst-case scenario (~-8f with combat, ~-5f without) greatly exceeding the best-case (~+3.5f with combat, ~+2.75f without), I have created a pessimistic reward landscape. The agents (their policy) have likely spent most of their time avoiding bad behavior rather than pursuing good behavior. This has led to little exploration and little to no movement. By adjusting the reward magnitude and creating a more optimistic reward landscape by amplifying rewards and decreasing penalties, the agents should start to explore good behaviors more reliably. Most notably, the step penalty in the past 13 runs has vastly outweighed the other rewards and penalties, dragging the mean rewards down substantially. With a drastically reduced step penalty and a reweighted reward/penalty landscape, the agent is much less punished and much more rewarded overall.
+
+### Changes:
+
+- Restructured reward magnitudes:
+  - Capture reward increased: 1f --> 2f
+  - Destroy reward increased: 0.5f --> 1f
+  - Death penalty increased: -0.5f --> -1f
+  - Losing capture point penalty increased: -1f --> -1.5f
+  - Capture point distance reward/penalty decreased: 1f max --> 0.5f
+  - **Step penalty severely decreased**: -3f max --> -1.05f
+
+### Results:
+
+Little improvement. The agents were more mobile than they've ever been, but they shimmied more than anything. Once again, the jump from close to medium-range spawnpoints dropped out progress. They agents had not learned movement - they learned to shimmy. But this is not a dance battle.
