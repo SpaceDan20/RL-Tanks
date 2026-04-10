@@ -61,15 +61,7 @@ environment_parameters:
           min_lesson_length: 100
           threshold: 1.8
         value: 1.0
-      - name: capture_only # move to the main battlefield, but only capture points, no combat
-        completion_criteria:
-          measure: progress # agents will capture less as they compete, so reward is suboptimal
-          behavior: TankyBrain
-          signal_smoothing: true
-          min_lesson_length: 100
-          threshold: 0.33
-        value: 1.5
-      - name: capture_and_combat # combat enabled at medium range spawns
+      - name: capture_and_combat # move to the main battlefield. fights on!
         completion_criteria:
           measure: reward
           behavior: TankyBrain

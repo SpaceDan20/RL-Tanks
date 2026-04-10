@@ -66,8 +66,7 @@ public class TankyAgent : Agent
     private float episodeCapturePointReward;
     private float episodeCaptureProgressReward;
     private bool enemyInSight;
-    private bool statsLogged = false;
-    private bool firstEpisode = true;
+    private float velocityLogTimer = 0f;
 
     public override void Initialize()
     {
@@ -81,18 +80,14 @@ public class TankyAgent : Agent
 
     public void LogEpisodeStats()
     {
-        if (!debugLogging) return;
-        Debug.Log($"[{gameObject.name}] Episode ended — Alignment: {episodeAlignmentReward:F4} | CapturePoint Distance: {episodeCapturePointReward:F4} | CapturePoint Progress: {episodeCaptureProgressReward:F4}");
-        statsLogged = true;
+        if (debugLogging)
+            Debug.Log($"[{gameObject.name}] Episode ended — Alignment: {episodeAlignmentReward:F4} | CapturePoint Distance: {episodeCapturePointReward:F4} | CapturePoint Progress: {episodeCaptureProgressReward:F4}");
     }
 
     public override void OnEpisodeBegin()
     {
         // Fallback: log episodes that ended via max steps (EnvironmentManager logs capture/destroy endings)
-        if (!statsLogged && !firstEpisode)
-            LogEpisodeStats();
-        statsLogged = false;
-        firstEpisode = false;
+        LogEpisodeStats();
 
         // Reset velocity and angular velocity on episode start
         rb.linearVelocity = Vector3.zero;
@@ -132,11 +127,23 @@ public class TankyAgent : Agent
     public override void CollectObservations(VectorSensor sensor)
     {
         enemyInSight = false; // Reset enemy in sight flag at the start of observation collection
-        sensor.AddObservation(tankHealth.NormalizedHealth); // Health as a normalized value [0, 1]
+
+        // --- Proprioception ---
+        sensor.AddObservation(Vector3.Dot(rb.linearVelocity, transform.forward) / maxSpeed);  // Forward velocity [-1, 1]
+        sensor.AddObservation(Vector3.Dot(rb.linearVelocity, transform.right) / maxSpeed);    // Lateral velocity [-1, 1]
+        sensor.AddObservation(rb.angularVelocity.y / (maxTurnRate * Mathf.Deg2Rad));          // Yaw rate [-1, 1]
+
+        // --- Health ---
+        sensor.AddObservation(tankHealth.NormalizedHealth); // [0, 1]
+
+        // --- Capture point ---
         float captureDistance = Vector3.Distance(transform.position, capturePoint.transform.position);
-        sensor.AddObservation(Mathf.Clamp01(captureDistance / maxCapturePointDistance)); // Normalized distance to capture point
-        sensor.AddObservation(capturePoint.IsBeingCapturedBy(this) ? 1f : 0f);           // 1 if this agent is capturing
-        sensor.AddObservation(capturePoint.IsBeingCapturedByEnemy(this) ? 1f : 0f);      // 1 if an enemy is capturing
+        sensor.AddObservation(Mathf.Clamp01(captureDistance / maxCapturePointDistance));       // Normalized distance [0, 1]
+        Vector3 dirToCapture = (capturePoint.transform.position - transform.position).normalized;
+        sensor.AddObservation(Vector3.SignedAngle(transform.forward, dirToCapture, Vector3.up) / 180f); // Angle to capture point [-1, 1]
+        sensor.AddObservation(capturePoint.IsBeingCapturedBy(this) ? 1f : 0f);                // 1 if this agent is capturing
+        sensor.AddObservation(capturePoint.IsBeingCapturedByEnemy(this) ? 1f : 0f);           // 1 if an enemy is capturing
+        
         // Gun sensors for detecting enemies and obstacles in the firing arc
         CastSensorArray(sensor, turret, gunSensorAngle, gunSensorRange, gunSensors, 0f); // Centered on turret forward
         // Turret sensors for situational awareness around the turret
@@ -299,8 +306,29 @@ private float GetAlignmentPotential()
     {
         // Cooldown management for firing
         if (fireCooldown > 0.01f)
-        {
             fireCooldown -= Time.deltaTime;
+
+        // Periodic velocity debug log (gated on debugLogging)
+        if (debugLogging)
+        {
+            velocityLogTimer -= Time.unscaledDeltaTime;
+            if (velocityLogTimer <= 0f)
+            {
+                velocityLogTimer = 5f; // Log every 5 seconds
+                // Log velocities
+                float fwd = Vector3.Dot(rb.linearVelocity, transform.forward);
+                float lat = Vector3.Dot(rb.linearVelocity, transform.right);
+                float yaw = rb.angularVelocity.y * Mathf.Rad2Deg;
+                Debug.Log($"[{gameObject.name}] Velocity — Forward: {fwd:F2} m/s | Lateral: {lat:F2} m/s | Yaw: {yaw:F2} °/s");
+                // Log capture point info
+                float capDist = Vector3.Distance(transform.position, capturePoint.transform.position);
+                float capDistNorm = Mathf.Clamp01(capDist / maxCapturePointDistance);
+                Vector3 dirToCapture = (capturePoint.transform.position - transform.position).normalized;
+                float capAngle = Vector3.SignedAngle(transform.forward, dirToCapture, Vector3.up);
+                bool isCap = capturePoint.IsBeingCapturedBy(this);
+                bool enemyCap = capturePoint.IsBeingCapturedByEnemy(this);
+                Debug.Log($"[{gameObject.name}] Capture Point — Dist: {capDistNorm:F2} ({capDist:F1} m) | Angle: {capAngle:F1}° | Capturing: {isCap} | Enemy Capturing: {enemyCap}");
+            }
         }
     }
 

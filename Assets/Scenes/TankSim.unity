@@ -245,7 +245,7 @@ PrefabInstance:
       objectReference: {fileID: 1251531775}
     - target: {fileID: 1234955913086893967, guid: df8f957f672479a47a21715f11996485, type: 3}
       propertyPath: debugLogging
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1234955913086893967, guid: df8f957f672479a47a21715f11996485, type: 3}
       propertyPath: environmentCenter
@@ -1350,9 +1350,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca562e60f7d4cfd4e9085a789c56767b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectNotes
-  notes: 'TODO:
-
-    FIX distance reward bug'
+  notes: Boogey
 --- !u!4 &1459984442
 Transform:
   m_ObjectHideFlags: 0
@@ -2636,7 +2634,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 936232970238118004, guid: df8f957f672479a47a21715f11996485, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -8.101951
+      value: -12.42
       objectReference: {fileID: 0}
     - target: {fileID: 936232970238118004, guid: df8f957f672479a47a21715f11996485, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2648,7 +2646,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 936232970238118004, guid: df8f957f672479a47a21715f11996485, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.9179816
       objectReference: {fileID: 0}
     - target: {fileID: 936232970238118004, guid: df8f957f672479a47a21715f11996485, type: 3}
       propertyPath: m_LocalRotation.x
@@ -2656,7 +2654,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 936232970238118004, guid: df8f957f672479a47a21715f11996485, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0
+      value: -0.39662302
       objectReference: {fileID: 0}
     - target: {fileID: 936232970238118004, guid: df8f957f672479a47a21715f11996485, type: 3}
       propertyPath: m_LocalRotation.z
@@ -2668,7 +2666,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 936232970238118004, guid: df8f957f672479a47a21715f11996485, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
+      value: -46.734
       objectReference: {fileID: 0}
     - target: {fileID: 936232970238118004, guid: df8f957f672479a47a21715f11996485, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -2686,14 +2684,6 @@ PrefabInstance:
       propertyPath: environmentManager
       value: 
       objectReference: {fileID: 1539526396}
-    - target: {fileID: 1234955913086893967, guid: df8f957f672479a47a21715f11996485, type: 3}
-      propertyPath: maxCapturePointDistance
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 4094379153230244169, guid: df8f957f672479a47a21715f11996485, type: 3}
-      propertyPath: m_BehaviorType
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 4225910501082380903, guid: df8f957f672479a47a21715f11996485, type: 3}
       propertyPath: m_Name
       value: Tanky1

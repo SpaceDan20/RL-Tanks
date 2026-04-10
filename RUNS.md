@@ -233,4 +233,32 @@ The reward restructuring clearly helped the tanks develop more unique and intere
 
 ### Results:
 
-TBD
+Progress. After 1M steps, the tanks are far more mobile than they ever were in the past 14 runs. However, they were not able to advance the curriculum inside of the independent, level 1 areas. They stayed in the first curriculum, spawning ~10m from the capture point every episode. Whenever they were spawned facing the capture point, they reliably drove forward and captured it. But when they were spawned facing away, or sideways to it, they struggled to turn into it. They sometimes avoided smacking into walls, but sometimes chose just to smack into them (maybe the capture point is behind them!). I've learned that movement in this environment is more complex to learn that I originally thought.
+
+## Run 16
+
+### Hypothesis:
+
+Teaching the tanks to move in this environment is complex. More importantly, my observation space likely needs a massive rework similar to the reward landscape rework. There is currently only one capture-point-related observation, distance to the capture point, which by itself is not good enough to tell the agent where to go. This lone observation, bad enough as it is, has to also fight 207 other, nonrelevant observations each step when the tank is learning how to move toward the capture point. A few additions that will likely help the agent in this capture-only navigation task are adding observations related to proprioception, like its own velocities, and adding more capture-point-related observations like what angle the agent's front is in relation to the capture point.
+
+### Changes:
+
+- Observation space rework
+  - Added linear, lateral, and angular velocity observations
+  - Added observation: Angle to the capture point
+  - Removed 8 raycast sensors (raycast observations decreased: 204 --> 180)
+- Removed 'capture_only' lesson from curriculum
+
+### Results:
+
+We got a pair of curious georges here. The tanks were even more mobile than run 15, and they demonstrated much more advanced movement behavior (driving around, turning, circling around the capture point). They did good and learned to capture the point (occasionally driving toward the center), meaning the shaped distance reward is working properly. However, although they came close, they never advanced to the farther spawns in level 1. The agents learned to generate ~0.1-0.15f curiosity rewards (on the curiosity NN), leading to hyperexploration. They were so eager to explore that they would slam into walls to do so (or maybe they are trying to escape!).
+
+## Run 17
+
+### Hypothesis:
+
+The issue likely lies in reward magnitudes again. In the very first level, tanks spawn ~10m away from the capture point (20m from the center). This means they are only able to generate a maximum 0.1f out of the 0.5f reward for closing distance to the capture point. This is the only shaped reward at this stage that doesn't involve being inside of the capture circle, and it is dwarfed by the step penalty (-1.05f for episode timeout). This encourages exploration, as agents can reliably generate 0.05f-0.1f curiosity rewards per earlier episodes by just driving around recklessly. The 2f capture reward + 1f capture progress reward help them target the point occasionally, but exploration early on pulls their attention away from it (they'll even drive around the backside of the capture point!).
+
+Also, the thresholds for advancing are likely too high, particularly for level 1a. Lowering the thresholds will allow them to advance to farther spawns, which increases their potential closing distance shaped reward maximum from 0.1f --> 0.175f --> 0.3f. This should also, over time, encourage exploitation over exploration.
+
+Lastly, a good portion of time early on in run 16 was spent slamming and driving into walls. They eventually learned to turn and drive alongside the wall, but this behavior only emerged late in training. Adding a small wall/obstacle collision penalty should encourage learning in how to navigate walls, allowing for quicker exploration.

@@ -61,7 +61,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 18855757cca8e2e4190a24df2c1b53af, type: 2}
     - target: {fileID: -4216859302048453862, guid: 38548c4351fb4d644a50593317179b23, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -8.101951
+      value: -12.42
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 38548c4351fb4d644a50593317179b23, type: 3}
       propertyPath: m_LocalPosition.y
@@ -73,7 +73,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 38548c4351fb4d644a50593317179b23, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.9179816
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 38548c4351fb4d644a50593317179b23, type: 3}
       propertyPath: m_LocalRotation.x
@@ -81,7 +81,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 38548c4351fb4d644a50593317179b23, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0
+      value: -0.39662302
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 38548c4351fb4d644a50593317179b23, type: 3}
       propertyPath: m_LocalRotation.z
@@ -93,7 +93,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 38548c4351fb4d644a50593317179b23, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
+      value: -46.734
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 38548c4351fb4d644a50593317179b23, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -266,7 +266,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.ML-Agents::Unity.MLAgents.Policies.BehaviorParameters
   m_BrainParameters:
-    VectorObservationSize: 208
+    VectorObservationSize: 188
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 3
@@ -316,10 +316,10 @@ MonoBehaviour:
   detectionLayers:
     serializedVersion: 2
     m_Bits: 31
-  gunSensors: 15
+  gunSensors: 12
   gunSensorRange: 150
   gunSensorAngle: 12
-  turretSensors: 25
+  turretSensors: 20
   turretSensorRange: 120
   turretSensorAngle: 45
   driverSensors: 12
@@ -332,7 +332,7 @@ MonoBehaviour:
   environmentCenter: {fileID: 0}
   environmentManager: {fileID: 0}
   capturePoint: {fileID: 0}
-  maxCapturePointDistance: 141
+  maxCapturePointDistance: 100
 --- !u!114 &681566040798514997
 MonoBehaviour:
   m_ObjectHideFlags: 0
