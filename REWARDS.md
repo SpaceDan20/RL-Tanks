@@ -10,12 +10,12 @@
 - Death penalty: -1f | EnvironmentManager.cs | OnTankDestroyed()
 - Lose the capture point: -1.5f | EnvironmentManager.cs | OnCapturePointCaptured()
 
-## Continuous Rewards
+## Continuous Rewards (per second)
 
 - Capture point progress: 0.1f (1f total) | TankyAgent.cs | OnActionReceived()
-- Capture point distance: ~0.0025f (0.5f max) | TankyAgent.cs | OnActionReceived()
-- Turret alignment: ~0.006f (0.25f max) | TankyAgent.cs | OnActionReceived(), gated behind enemyInSight
-- Step penalty: -0.00035f naive (1.05f max) | TankyAgent.cs | OnActionReceived()
+- Capture point distance: ~0.009f (0.5f max) | TankyAgent.cs | OnActionReceived()
+- Turret alignment: ~0.004f (0.25f max) | TankyAgent.cs | OnActionReceived(), gated behind enemyInSight
+- Step penalty: -0.0175f naive (1.05f max) | TankyAgent.cs | OnActionReceived()
 
 ## Perfect Capture-Only Episode Estimate
 

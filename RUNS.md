@@ -219,3 +219,18 @@ The reward magnitudes and overall structure are likely broken. With a worst-case
 ### Results:
 
 Little improvement. The agents were more mobile than they've ever been, but they shimmied more than anything. Once again, the jump from close to medium-range spawnpoints dropped out progress. They agents had not learned movement - they learned to shimmy. But this is not a dance battle.
+
+## Run 15
+
+### Hypothesis:
+
+The reward restructuring clearly helped the tanks develop more unique and interesting behavior, but they still struggled to learn basic movement. I have adjusted the curriculum and added new, seperate rooms for the tanks to independently learn how to move toward capture points. By starting off in this simplifed environment and first learning movement and capture without having to contest the point, the agents should be able to learn movement and capturing more effectively. Once they adequately learn how to drive to the point from the farthest spawns (~50m), only then are they brought to the main battlefield to compete for the capture point. Finally, combat can be introduced.
+
+### Changes:
+
+- Curriculum rework
+  - Added 3 independent levels in an isolated area focused on capturing prior to main battlefield
+
+### Results:
+
+TBD

@@ -54,17 +54,20 @@ public class TankyAgent : Agent
     public Transform environmentCenter;
     public EnvironmentManager environmentManager;
     public CapturePoint capturePoint;
-    public float maxCapturePointDistance = 60f;
+    public float maxCapturePointDistance = 100f;
 
     private Rigidbody rb;
     private TankHealth tankHealth;
     private float previousAlignmentPotential;
     private float previousCapturePointDistance;
     private float previousCaptureProgress;
+    private float captureProgressBudget;
     private float episodeAlignmentReward;
     private float episodeCapturePointReward;
     private float episodeCaptureProgressReward;
     private bool enemyInSight;
+    private bool statsLogged = false;
+    private bool firstEpisode = true;
 
     public override void Initialize()
     {
@@ -76,8 +79,21 @@ public class TankyAgent : Agent
         brakeRate = decelerationRate * brakeMultiplier;
     }
 
+    public void LogEpisodeStats()
+    {
+        if (!debugLogging) return;
+        Debug.Log($"[{gameObject.name}] Episode ended — Alignment: {episodeAlignmentReward:F4} | CapturePoint Distance: {episodeCapturePointReward:F4} | CapturePoint Progress: {episodeCaptureProgressReward:F4}");
+        statsLogged = true;
+    }
+
     public override void OnEpisodeBegin()
     {
+        // Fallback: log episodes that ended via max steps (EnvironmentManager logs capture/destroy endings)
+        if (!statsLogged && !firstEpisode)
+            LogEpisodeStats();
+        statsLogged = false;
+        firstEpisode = false;
+
         // Reset velocity and angular velocity on episode start
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
@@ -88,18 +104,20 @@ public class TankyAgent : Agent
 
         enemyInSight = false;
 
-        // Log and reset per-episode PBRS totals
-        if (debugLogging)
-            Debug.Log($"[{gameObject.name}] Episode ended — Alignment PBRS: {episodeAlignmentReward:F4} | CapturePoint Distance: {episodeCapturePointReward:F4} | CapturePoint Progress: {episodeCaptureProgressReward:F4}");
+        // Reset per-episode reward totals
         episodeAlignmentReward = 0f;
         episodeCapturePointReward = 0f;
         episodeCaptureProgressReward = 0f;
 
+        // Limit total shaping reward from capture progress to 1.0f per episode
+        captureProgressBudget = 1f;
+
         // Reset health
         tankHealth.ResetHealth();
 
-        // Reset episode in the environment manager to reposition tanks and reset any necessary state
+        // Compute spawn assignments (once per episode) then apply only this agent's spawn
         environmentManager.ResetEpisode();
+        environmentManager.SpawnSelf(this);
 
         // Reset turret rotation
         turret.localRotation = Quaternion.identity;
@@ -222,18 +240,21 @@ public class TankyAgent : Agent
 
         // Reward shaping for moving towards the capture point
         float currentCapturePointDistance = Vector3.Distance(transform.position, capturePoint.transform.position);
-        float capturePointReward = (previousCapturePointDistance - currentCapturePointDistance) / maxCapturePointDistance * 0.5f;
+        float capturePointReward = (previousCapturePointDistance - currentCapturePointDistance) / maxCapturePointDistance * 0.5f; // Scaled to a maximum of 0.5f reward per episode for moving from max distance to the point
         AddReward(capturePointReward);
         episodeCapturePointReward += capturePointReward;
         previousCapturePointDistance = currentCapturePointDistance;
 
-        // Reward shaping for capture progress (only while this agent is capturing)
-        if (capturePoint.IsBeingCapturedBy(this))
+        // Reward shaping for capture progress (only while this agent is capturing, capped at 1f total per episode)
+        if (capturePoint.IsBeingCapturedBy(this) && captureProgressBudget > 0f)
         {
             float currentCaptureProgress = capturePoint.CaptureProgress;
-            float captureProgressReward = (currentCaptureProgress - previousCaptureProgress) / capturePoint.captureTime;
+            float captureProgressReward = Mathf.Min(
+                (currentCaptureProgress - previousCaptureProgress) / capturePoint.captureTime,
+                captureProgressBudget);
             AddReward(captureProgressReward);
             episodeCaptureProgressReward += captureProgressReward;
+            captureProgressBudget -= captureProgressReward;
             previousCaptureProgress = currentCaptureProgress;
         }
         else
