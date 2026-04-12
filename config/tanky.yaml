@@ -24,9 +24,9 @@ behaviors:
       window: 10
       play_against_latest_model_ratio: 0.5
       initial_elo: 1200.0
-    max_steps: 3000000 # ~1.5M steps/hr for 3 headless environments
+    max_steps: 3000000 # ~1.5M steps/hr for 4 headless environments
     time_horizon: 256
-    summary_freq: 25000
+    summary_freq: 20000
     checkpoint_interval: 100000
     keep_checkpoints: 50
 
@@ -47,23 +47,15 @@ environment_parameters:
           behavior: TankyBrain
           signal_smoothing: true
           min_lesson_length: 100
-          threshold: 0.75
-        value: 0.5
+          threshold: 0.70
+        value: 1.0
       - name: level_1c # 50m spawns in level 1 rooms
         completion_criteria:
           measure: reward
           behavior: TankyBrain
           signal_smoothing: true
           min_lesson_length: 100
-          threshold: 1.5
-        value: 1.0
-      - name: capture_and_combat # move to the main battlefield. fights on!
-        completion_criteria:
-          measure: reward
-          behavior: TankyBrain
-          signal_smoothing: true
-          min_lesson_length: 100
-          threshold: 2.5
+          threshold: 1.0
         value: 2.0
-      - name: capture_and_combat_far # advance from medium to far spawns
+      - name: capture_and_combat # move to the main battlefield. fights on!
         value: 3.0

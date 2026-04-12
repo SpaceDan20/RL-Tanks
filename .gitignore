@@ -101,6 +101,3 @@ InitTestScene*.unity*
 # Python
 ml-agents-env/
 results/
-
-# Large Assets
-Assets/small_tree1.fbx

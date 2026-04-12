@@ -297,9 +297,20 @@ The tanks finally reached the main battlefield. By resuming the training from 1M
 
 ### Hypothesis:
 
-The previous run demonstrated that the learning loop works. My reward structure and observation space reworks allowed the tanks to genuinely learn throughout the run. However, the environment, mainly the main battlefield, is likely in need of a serious rework. Currently, the main battlefield is a chaotic environment with one capture point that spawns 25-35 tank-sized containers (good for cover) randomly throughout the map. Once the agents spawn in this environment, more often than not are they able to immediately see and destroy one another within ~10s (1 reload). If the ultimate goal is getting the agents to capture and contest the point, the tanks should spawn in a somewhat more predictable environment where they cannot be destroyed right off the bat.
+The previous run demonstrated that the learning loop works. My reward structure and observation space reworks allowed the tanks to genuinely learn throughout the run. However, the environment, mainly the main battlefield, is likely in need of a serious rework. Currently, the main battlefield is a chaotic environment with one capture point that spawns 25-35 tank-sized containers (good for cover) randomly throughout the map. Once the agents spawn in this environment, more often than not are they able to immediately see and destroy one another within ~10s (1 reload). If the ultimate goal is getting the agents to capture and contest the point, the tanks should spawn in a somewhat more predictable environment where they cannot be destroyed right off the bat. Also, the agents were showing reliable movement behavior and learning before the thresholds in level 1 were met, meaning they can be tuned down slightly to advance to the main battlefield sooner.
 
-TODO:
+### Changes:
 
-- Modify the main battlefield
-- Modify the random container spawning logic
+- Environment rework
+  - Removed random obstacle (containers) spawning mechanism
+  - Built a basic battle map with various obstacles (containers, walls, and buildings)
+  - Shrunk map from 200x200m to 150x150m
+  - Removed close, medium, and far spawnpoints for permanent battle spawnpoints
+- Curriculum
+  - Removed capture_and_combat_far lesson
+  - Thresholds decreased:
+    - 0.25, 0.75, 1.5 --> 0.25, 0.70, 1.0
+
+### Results:
+
+Agents were able to advance to the new main battlefield environment around 1.6M steps, 200K steps sooner than run 18's 1.8M. However, the agents essentially flatlined for the remaining 1.4M steps. They had gained interesting behavior of backing up to the right side of the capture point, and this behavior carried over to the main battlefield. Despite this, they never learned complex navigation or capture point contesting. The still struggle with hitting walls and obstacles, and they still have trouble moving to the point.

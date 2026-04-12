@@ -275,7 +275,7 @@ MonoBehaviour:
     VectorActionDescriptions: []
     VectorActionSpaceType: 1
     hasUpgradedBrainParametersWithActionSpec: 1
-  m_Model: {fileID: 5022602860645237092, guid: ccead95851376d04d94484e2c238f049, type: 3}
+  m_Model: {fileID: 5022602860645237092, guid: 4d13695287c910e4d8cb561aa82807b5, type: 3}
   m_InferenceDevice: 0
   m_BehaviorType: 2
   m_BehaviorName: TankyBrain

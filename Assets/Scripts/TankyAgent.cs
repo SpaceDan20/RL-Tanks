@@ -378,10 +378,10 @@ private float GetAlignmentPotential()
 
     public void OnCollisionEnter(Collision collision)
     {
-        // Check for tag of collided object to check if it's a wall
-        if (collision.collider.CompareTag("Wall"))
+        // Check for tag of collided object to check if it's a wall or an obstacle
+        if (collision.collider.CompareTag("Wall") || collision.collider.CompareTag("Obstacle"))
         {
-            // Penalize for colliding with walls
+            // Penalize once per collision for colliding with walls or obstacles
             AddReward(-0.05f);
         }
     }

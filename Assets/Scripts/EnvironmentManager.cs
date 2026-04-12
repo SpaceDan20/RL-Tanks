@@ -2,26 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.MLAgents;
 
-[System.Serializable]
-public class ObstacleEntry
-{
-    public GameObject prefab;
-    public float spawnHeight;
-}
-
 public class EnvironmentManager : MonoBehaviour
 {
-    [Header("Obstacles")]
-    public ObstacleEntry[] obstacles;
-    public int minObstacles = 10;
-    public int maxObstacles = 25;
-
-    [Header("Spawn Settings")]
-    public Transform groundPlane;
-    public Transform obstaclesParent;
-    public float spawnPadding = 5f;
-    public float minDistanceFromTanks;
-
     [Header("Tanks")]
     public TankyAgent[] teamATanks;
     public TankyAgent[] teamBTanks;
@@ -30,13 +12,9 @@ public class EnvironmentManager : MonoBehaviour
     public CapturePoint capturePoint;
 
     [Header("Main Spawn Points")]
-    public float spawnAngles = 90f;
-    public Transform[] teamACloseSpawnPoints;
-    public Transform[] teamBCloseSpawnPoints;
-    public Transform[] teamAMidSpawnPoints;
-    public Transform[] teamBMidSpawnPoints;
-    public Transform[] teamAFarSpawnPoints;
-    public Transform[] teamBFarSpawnPoints;
+    public float spawnAngles = 30f;
+    public Transform[] teamABattleSpawnPoints;
+    public Transform[] teamBBattleSpawnPoints;
 
     [Header("Level 1 Areas")]
     public Transform[] teamALevel1SpawnPoints; // 3 entries: index 0 = 1a, 1 = 1b, 2 = 1c
@@ -44,9 +22,6 @@ public class EnvironmentManager : MonoBehaviour
     public CapturePoint level1AreaACapturePoint;
     public CapturePoint level1AreaBCapturePoint;
 
-    private Transform[] teamASpawnPoints;
-    private Transform[] teamBSpawnPoints;
-    private List<GameObject> spawnedObstacles = new List<GameObject>();
     private bool episodeResetHandled = false;
 
     // Pre-computed spawn assignments — applied per-agent in SpawnSelf()
@@ -59,19 +34,20 @@ public class EnvironmentManager : MonoBehaviour
     // -------------------------------------------------------------------------
 
     private float Stage =>
-        Academy.Instance.EnvironmentParameters.GetWithDefault("stages", 2f);
+        Academy.Instance.EnvironmentParameters.GetWithDefault("stages", 3f);
 
-    private bool IsLevel1Stage => Stage < 1.25f;
+    // Level 1 stages are 0.0, 1.0, 2.0; main battlefield is 3.0
+    private bool IsLevel1Stage => Stage < 2.5f;
 
-    // combat_and_combat stage value = 2.0; midpoint between capture_only (1.5) and it is 1.75
-    public bool CombatEnabled => Stage >= 1.75f;
+    // Combat is enabled only on the main battlefield (stage 3.0)
+    public bool CombatEnabled => Stage >= 2.5f;
 
-    // Returns 0 / 1 / 2 for level_1a / level_1b / level_1c
+    // Returns 0 / 1 / 2 for level_1a (0.0) / level_1b (1.0) / level_1c (2.0)
     private int Level1SpawnIndex()
     {
         float stage = Stage;
-        if (stage < 0.25f) return 0;
-        if (stage < 0.75f) return 1;
+        if (stage < 0.5f) return 0;
+        if (stage < 1.5f) return 1;
         return 2;
     }
 
@@ -79,7 +55,7 @@ public class EnvironmentManager : MonoBehaviour
     // Episode reset
     // -------------------------------------------------------------------------
 
-    // Pre-computes spawn assignments and resets obstacles + capture points.
+    // Pre-computes spawn assignments and resets capture points.
     // Each agent applies its own spawn via SpawnSelf() in OnEpisodeBegin().
     public void ResetEpisode()
     {
@@ -91,13 +67,6 @@ public class EnvironmentManager : MonoBehaviour
         episodeResetHandled = true;
 
         ComputeSpawnAssignments();
-
-        if (!IsLevel1Stage)
-        {
-            ClearObstacles();
-            SpawnObstacles();
-        }
-
         ResetCapturePoints();
     }
 
@@ -158,12 +127,9 @@ public class EnvironmentManager : MonoBehaviour
 
     private void ComputeMainAssignments()
     {
-        teamASpawnPoints = GetMainSpawnPoints(teamACloseSpawnPoints, teamAMidSpawnPoints, teamAFarSpawnPoints);
-        teamBSpawnPoints = GetMainSpawnPoints(teamBCloseSpawnPoints, teamBMidSpawnPoints, teamBFarSpawnPoints);
-
         // Shuffle team A indices
         List<int> teamAIndices = new List<int>();
-        for (int i = 0; i < teamASpawnPoints.Length; i++) teamAIndices.Add(i);
+        for (int i = 0; i < teamABattleSpawnPoints.Length; i++) teamAIndices.Add(i);
         for (int i = teamAIndices.Count - 1; i > 0; i--)
         {
             int r = Random.Range(0, i + 1);
@@ -172,7 +138,7 @@ public class EnvironmentManager : MonoBehaviour
 
         // Shuffle team B indices
         List<int> teamBIndices = new List<int>();
-        for (int i = 0; i < teamBSpawnPoints.Length; i++) teamBIndices.Add(i);
+        for (int i = 0; i < teamBBattleSpawnPoints.Length; i++) teamBIndices.Add(i);
         for (int i = teamBIndices.Count - 1; i > 0; i--)
         {
             int r = Random.Range(0, i + 1);
@@ -182,7 +148,7 @@ public class EnvironmentManager : MonoBehaviour
         for (int i = 0; i < teamATanks.Length; i++)
         {
             float angle = Random.Range(180 - spawnAngles / 2, 180 + spawnAngles / 2);
-            pendingPositions[teamATanks[i]] = teamASpawnPoints[teamAIndices[i]].position;
+            pendingPositions[teamATanks[i]] = teamABattleSpawnPoints[teamAIndices[i]].position;
             pendingRotations[teamATanks[i]] = Quaternion.Euler(0, angle, 0);
             pendingCapturePoints[teamATanks[i]] = capturePoint;
         }
@@ -190,72 +156,9 @@ public class EnvironmentManager : MonoBehaviour
         for (int i = 0; i < teamBTanks.Length; i++)
         {
             float angle = Random.Range(-spawnAngles / 2, spawnAngles / 2);
-            pendingPositions[teamBTanks[i]] = teamBSpawnPoints[teamBIndices[i]].position;
+            pendingPositions[teamBTanks[i]] = teamBBattleSpawnPoints[teamBIndices[i]].position;
             pendingRotations[teamBTanks[i]] = Quaternion.Euler(0, angle, 0);
             pendingCapturePoints[teamBTanks[i]] = capturePoint;
-        }
-    }
-
-    // capture_only = 1.5, capture_and_combat = 2.0, capture_and_combat_far = 3.0
-    private Transform[] GetMainSpawnPoints(Transform[] close, Transform[] mid, Transform[] far)
-    {
-        float stage = Stage;
-        if (stage < 1.75f) return close;
-        if (stage < 2.5f)  return mid;
-        return far;
-    }
-
-    // -------------------------------------------------------------------------
-    // Obstacles
-    // -------------------------------------------------------------------------
-
-    public void ClearObstacles()
-    {
-        foreach (GameObject obstacle in spawnedObstacles)
-            Destroy(obstacle);
-        spawnedObstacles.Clear();
-    }
-
-    public void SpawnObstacles()
-    {
-        int obstacleCount = Random.Range(minObstacles, maxObstacles + 1);
-
-        for (int i = 0; i < obstacleCount; i++)
-        {
-            ObstacleEntry selectedEntry = obstacles[Random.Range(0, obstacles.Length)];
-            Vector3 spawnPosition = Vector3.zero;
-            int attempts = 0;
-            bool validPosition = false;
-
-            while (!validPosition && attempts < 100)
-            {
-                attempts++;
-                float xPos = Random.Range(
-                    groundPlane.position.x - groundPlane.localScale.x * 10f / 2f + spawnPadding,
-                    groundPlane.position.x + groundPlane.localScale.x * 10f / 2f - spawnPadding);
-                float zPos = Random.Range(
-                    groundPlane.position.z - groundPlane.localScale.z * 10f / 2f + spawnPadding,
-                    groundPlane.position.z + groundPlane.localScale.z * 10f / 2f - spawnPadding);
-                spawnPosition = new Vector3(xPos, groundPlane.position.y + selectedEntry.spawnHeight, zPos);
-
-                validPosition = true;
-                foreach (Transform sp in teamASpawnPoints)
-                {
-                    if (Vector3.Distance(spawnPosition, sp.position) < minDistanceFromTanks)
-                    { validPosition = false; break; }
-                }
-                if (validPosition)
-                {
-                    foreach (Transform sp in teamBSpawnPoints)
-                    {
-                        if (Vector3.Distance(spawnPosition, sp.position) < minDistanceFromTanks)
-                        { validPosition = false; break; }
-                    }
-                }
-            }
-
-            Quaternion rot = Quaternion.Euler(0, Random.Range(0f, 360f), 0);
-            spawnedObstacles.Add(Instantiate(selectedEntry.prefab, spawnPosition, rot, obstaclesParent));
         }
     }
 
