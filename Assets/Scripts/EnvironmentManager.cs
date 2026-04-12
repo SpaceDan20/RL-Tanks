@@ -59,7 +59,7 @@ public class EnvironmentManager : MonoBehaviour
     // -------------------------------------------------------------------------
 
     private float Stage =>
-        Academy.Instance.EnvironmentParameters.GetWithDefault("stages", 0f);
+        Academy.Instance.EnvironmentParameters.GetWithDefault("stages", 2f);
 
     private bool IsLevel1Stage => Stage < 1.25f;
 

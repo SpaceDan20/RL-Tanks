@@ -262,3 +262,44 @@ The issue likely lies in reward magnitudes again. In the very first level, tanks
 Also, the thresholds for advancing are likely too high, particularly for level 1a. Lowering the thresholds will allow them to advance to farther spawns, which increases their potential closing distance shaped reward maximum from 0.1f --> 0.175f --> 0.3f. This should also, over time, encourage exploitation over exploration.
 
 Lastly, a good portion of time early on in run 16 was spent slamming and driving into walls. They eventually learned to turn and drive alongside the wall, but this behavior only emerged late in training. Adding a small wall/obstacle collision penalty should encourage learning in how to navigate walls, allowing for quicker exploration.
+
+### Changes:
+
+- Rewards reworked
+  - Step penalty halved: 1.05f max --> 0.51f
+  - Capture point distance reward max increased: 0.5f --> 0.75f
+  - Wall collision penalty added --> -0.05f
+- Curriculum thresholds tweaked
+  - level1a: 1 --> 0.25
+  - level1b: 1.5 --> 0.75
+  - level1c: 1.8 --> 1.5
+  - capture_and_combat: 2.0 --> 2.5
+
+### Results:
+
+The agents continued to show more advanced movement behavior, including backing up into the capture point from 25m away. However, they were not able to advance to the farthest spawn. The curriculum advanced to medium spawns at ~300k steps and slowed them down.
+
+## Run 18
+
+### Hypothesis:
+
+Curiosity seems to be hurting the agents more than helping them. It is likely adding noise to an already packed signal. Given the denser reward environment, curiosity is likely not warranted. Looking back on all of the previous runs shows that curiosity reward has always been a pretty large signal. While confining the agents to the isolated level 1 rooms drastically reduced overall curiosity rewards for runs 15-17, the rewards are still likely interfering with the overall signal. By removing curiosity completely, the agents may stop getting distracted with exploring unimportant sections of the area and more adequately follow the dense reward signals instead.
+
+### Changes:
+
+- Removed curiosity
+
+### Results:
+
+The tanks finally reached the main battlefield. By resuming the training from 1M steps to 3M, enough progress was made to pass the 1.5 mean reward threshold at step ~1.8M. As expected, overall performance dropped out once the agents were introduced to the new battlefield environment. However, their performance mostly stagnated for the remaining 1.2M steps. The agents were more mobile than they've ever been in the main battlefield, but the added combat mechanics started to pull their attention back to little movement and focusing on combat. The agents didn't learn to capture the single point in the main battlefield reliably, leading to the same default back to finding and destroying the enemy instead.
+
+## Run 19
+
+### Hypothesis:
+
+The previous run demonstrated that the learning loop works. My reward structure and observation space reworks allowed the tanks to genuinely learn throughout the run. However, the environment, mainly the main battlefield, is likely in need of a serious rework. Currently, the main battlefield is a chaotic environment with one capture point that spawns 25-35 tank-sized containers (good for cover) randomly throughout the map. Once the agents spawn in this environment, more often than not are they able to immediately see and destroy one another within ~10s (1 reload). If the ultimate goal is getting the agents to capture and contest the point, the tanks should spawn in a somewhat more predictable environment where they cannot be destroyed right off the bat.
+
+TODO:
+
+- Modify the main battlefield
+- Modify the random container spawning logic

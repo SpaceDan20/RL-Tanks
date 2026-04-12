@@ -275,9 +275,9 @@ MonoBehaviour:
     VectorActionDescriptions: []
     VectorActionSpaceType: 1
     hasUpgradedBrainParametersWithActionSpec: 1
-  m_Model: {fileID: 0}
+  m_Model: {fileID: 5022602860645237092, guid: ccead95851376d04d94484e2c238f049, type: 3}
   m_InferenceDevice: 0
-  m_BehaviorType: 0
+  m_BehaviorType: 2
   m_BehaviorName: TankyBrain
   TeamId: 0
   m_UseChildSensors: 1
@@ -328,7 +328,7 @@ MonoBehaviour:
   hullSensors: 16
   hullSensorRange: 5
   hullSensorAngle: 240
-  debugLogging: 1
+  debugLogging: 0
   environmentCenter: {fileID: 0}
   environmentManager: {fileID: 0}
   capturePoint: {fileID: 0}

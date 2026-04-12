@@ -247,7 +247,7 @@ public class TankyAgent : Agent
 
         // Reward shaping for moving towards the capture point
         float currentCapturePointDistance = Vector3.Distance(transform.position, capturePoint.transform.position);
-        float capturePointReward = (previousCapturePointDistance - currentCapturePointDistance) / maxCapturePointDistance * 0.5f; // Scaled to a maximum of 0.5f reward per episode for moving from max distance to the point
+        float capturePointReward = (previousCapturePointDistance - currentCapturePointDistance) / maxCapturePointDistance * 0.75f; // Scaled to a maximum of 0.75f reward per episode for moving from max distance to the point
         AddReward(capturePointReward);
         episodeCapturePointReward += capturePointReward;
         previousCapturePointDistance = currentCapturePointDistance;
@@ -270,7 +270,7 @@ public class TankyAgent : Agent
         }
 
         // Step penalty
-        AddReward(-0.00035f);
+        AddReward(-0.00017f);
     }
 
     private TankyAgent GetNearestEnemy()
@@ -373,6 +373,16 @@ private float GetAlignmentPotential()
                 sensor.AddObservation(1f); // Clear line of sight
                 sensor.AddObservation(0f); // Nothing detected
             }
+        }
+    }
+
+    public void OnCollisionEnter(Collision collision)
+    {
+        // Check for tag of collided object to check if it's a wall
+        if (collision.collider.CompareTag("Wall"))
+        {
+            // Penalize for colliding with walls
+            AddReward(-0.05f);
         }
     }
 
