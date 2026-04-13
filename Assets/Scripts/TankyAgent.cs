@@ -60,8 +60,6 @@ public class TankyAgent : Agent
     private TankHealth tankHealth;
     private float previousAlignmentPotential;
     private float previousCapturePointDistance;
-    private float previousCaptureProgress;
-    private float captureProgressBudget;
     private float episodeAlignmentReward;
     private float episodeCapturePointReward;
     private float episodeCaptureProgressReward;
@@ -84,6 +82,12 @@ public class TankyAgent : Agent
             Debug.Log($"[{gameObject.name}] Episode ended — Alignment: {episodeAlignmentReward:F4} | CapturePoint Distance: {episodeCapturePointReward:F4} | CapturePoint Progress: {episodeCaptureProgressReward:F4}");
     }
 
+    public void AddCaptureProgressReward(float amount)
+    {
+        AddReward(amount);
+        episodeCaptureProgressReward += amount;
+    }
+
     public override void OnEpisodeBegin()
     {
         // Fallback: log episodes that ended via max steps (EnvironmentManager logs capture/destroy endings)
@@ -104,9 +108,6 @@ public class TankyAgent : Agent
         episodeCapturePointReward = 0f;
         episodeCaptureProgressReward = 0f;
 
-        // Limit total shaping reward from capture progress to 1.0f per episode
-        captureProgressBudget = 1f;
-
         // Reset health
         tankHealth.ResetHealth();
 
@@ -121,7 +122,6 @@ public class TankyAgent : Agent
         // step reflects real improvement rather than a jump from zero
         previousCapturePointDistance = Vector3.Distance(transform.position, capturePoint.transform.position);
         previousAlignmentPotential = GetAlignmentPotential();
-        previousCaptureProgress = 0f;
     }
 
     public override void CollectObservations(VectorSensor sensor)
@@ -252,25 +252,8 @@ public class TankyAgent : Agent
         episodeCapturePointReward += capturePointReward;
         previousCapturePointDistance = currentCapturePointDistance;
 
-        // Reward shaping for capture progress (only while this agent is capturing, capped at 1f total per episode)
-        if (capturePoint.IsBeingCapturedBy(this) && captureProgressBudget > 0f)
-        {
-            float currentCaptureProgress = capturePoint.CaptureProgress;
-            float captureProgressReward = Mathf.Min(
-                (currentCaptureProgress - previousCaptureProgress) / capturePoint.captureTime,
-                captureProgressBudget);
-            AddReward(captureProgressReward);
-            episodeCaptureProgressReward += captureProgressReward;
-            captureProgressBudget -= captureProgressReward;
-            previousCaptureProgress = currentCaptureProgress;
-        }
-        else
-        {
-            previousCaptureProgress = 0f; // Reset silently so the next capture starts without a spike
-        }
-
         // Step penalty
-        AddReward(-0.00017f);
+        AddReward(-0.00025f);
     }
 
     private TankyAgent GetNearestEnemy()

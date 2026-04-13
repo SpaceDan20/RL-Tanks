@@ -16,6 +16,15 @@ public class CapturePoint : MonoBehaviour
     private float captureProgress = 0f;
     private bool captured = false;
 
+    private void Awake()
+    {
+        if (environmentManager == null)
+            environmentManager = GetComponentInParent<EnvironmentManager>();
+
+        if (environmentManager == null)
+            Debug.LogError($"CapturePoint '{name}' has no EnvironmentManager assigned and none found in parent hierarchy.", this);
+    }
+
     private void Update()
     {
         if (captured) return;
@@ -26,6 +35,16 @@ public class CapturePoint : MonoBehaviour
                 capturingAgent = tank;
 
             captureProgress += Time.deltaTime;
+            capturingAgent.AddCaptureProgressReward(0.5f * Time.deltaTime / captureTime);
+        }
+        else if (tanksInZone.Count == 0 && captureProgress > 0f)
+        {
+            float decay = Mathf.Min(captureProgress, Time.deltaTime);
+            captureProgress -= decay;
+            if (capturingAgent != null)
+                capturingAgent.AddCaptureProgressReward(-0.5f * decay / captureTime);
+            if (captureProgress <= 0f)
+                capturingAgent = null;
         }
 
         if (captureSlider != null)
@@ -52,12 +71,6 @@ public class CapturePoint : MonoBehaviour
         if (agent == null) return;
 
         tanksInZone.Remove(agent);
-
-        if (agent == capturingAgent)
-        {
-            capturingAgent = null;
-            captureProgress = 0f;
-        }
     }
 
     private void OnCaptured()
@@ -65,7 +78,7 @@ public class CapturePoint : MonoBehaviour
         Debug.Log($"Capture Point captured by {capturingAgent.name}!");
         captured = true;
         if (captureSlider != null) captureSlider.value = 1f;
-        capturingAgent.AddReward(2f);
+        capturingAgent.AddReward(1.5f);
         environmentManager.OnCapturePointCaptured(capturingAgent);
     }
 

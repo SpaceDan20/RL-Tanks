@@ -101,3 +101,6 @@ InitTestScene*.unity*
 # Python
 ml-agents-env/
 results/
+
+# Large asset folders
+/[Aa]ssets/Pandazole_Ultimate_Pack/

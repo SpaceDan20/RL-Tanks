@@ -2,8 +2,8 @@ behaviors:
   TankyBrain:
     trainer_type: ppo
     hyperparameters:
-      batch_size: 1024
-      buffer_size: 50000
+      batch_size: 4096
+      buffer_size: 80000 # ~x20 multiplier
       learning_rate: 0.0003
       beta: 0.005
       epsilon: 0.2
@@ -24,7 +24,7 @@ behaviors:
       window: 10
       play_against_latest_model_ratio: 0.5
       initial_elo: 1200.0
-    max_steps: 3000000 # ~1.5M steps/hr for 4 headless environments
+    max_steps: 1500000 # ~1.5M steps/hr for 4 headless environments
     time_horizon: 256
     summary_freq: 20000
     checkpoint_interval: 100000
@@ -33,29 +33,37 @@ behaviors:
 environment_parameters:
   stages:
     curriculum:
-      - name: level_1a # 10m spawns in level 1 rooms
+      - name: level_1a # 7m spawns, front-facing (30 degree arc)
         completion_criteria:
           measure: reward
           behavior: TankyBrain
           signal_smoothing: true
-          min_lesson_length: 100
-          threshold: 0.25
+          min_lesson_length: 150
+          threshold: 1.1
         value: 0.0
-      - name: level_1b # 25m spawns in level 1 rooms
+      - name: level_1b # 12m spawns, front-facing (60 degree arc)
         completion_criteria:
           measure: reward
           behavior: TankyBrain
           signal_smoothing: true
-          min_lesson_length: 100
-          threshold: 0.70
+          min_lesson_length: 150
+          threshold: 1.2
         value: 1.0
-      - name: level_1c # 50m spawns in level 1 rooms
+      - name: level_2 # 20m spawns, single obstacle, front-facing (60 degree arc)
         completion_criteria:
           measure: reward
           behavior: TankyBrain
           signal_smoothing: true
-          min_lesson_length: 100
-          threshold: 1.0
+          min_lesson_length: 150
+          threshold: 1.3
         value: 2.0
-      - name: capture_and_combat # move to the main battlefield. fights on!
+      - name: level_3 # 25m spawns, multiple obstacles, multiple spawns, front-facing (90 degree arc)
+        completion_criteria:
+          measure: reward
+          behavior: TankyBrain
+          signal_smoothing: true
+          min_lesson_length: 150
+          threshold: 1.4
         value: 3.0
+      - name: main_battle # move to the main battlefield. fights on!
+        value: 4.0

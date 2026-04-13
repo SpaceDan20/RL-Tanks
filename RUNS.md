@@ -314,3 +314,52 @@ The previous run demonstrated that the learning loop works. My reward structure 
 ### Results:
 
 Agents were able to advance to the new main battlefield environment around 1.6M steps, 200K steps sooner than run 18's 1.8M. However, the agents essentially flatlined for the remaining 1.4M steps. They had gained interesting behavior of backing up to the right side of the capture point, and this behavior carried over to the main battlefield. Despite this, they never learned complex navigation or capture point contesting. The still struggle with hitting walls and obstacles, and they still have trouble moving to the point.
+
+## Run 20
+
+### Hypothesis:
+
+The agents still struggle with navigation and obstacle avoidance. The level 1 room allows them to learn basic movement, but it is not concrete enough to infer from when they move to the primary battlefield. The main reason is the fact that level 1 does not have obstacles besides the outer walls. It also progresses (1a to b to c) based on spawn distances from the capture point (10m to 25 to 50), which is fine, but it is not helpful when the agents start off spawning at completely random angles.
+
+By first changing the random angle spawns to random yet front-facing spawns, this should empower the "angle to capture point" observation to help guide the agents toward the capture point sooner. In the main battlefield, the agent never spawns completely backwards anyway. By also adding 2 additional levels before the main battlefield, 1 with a single obstacle and 1 with multiple obstacles, the curriculum should more adequately teach the agents how to navigate to the point by going around obstacles. This will allow a much stronger network as a starting point once the agents are moved to the main battlefield, which should resolve the problem of catastrophic forgetting when it comes to navigating to and capturing the point.
+
+By upping thresholds and min_episode_length in the curriculum, the agents have to display more consistent learning to advance to harder lessons. This should help the agents generalize better once they advance to unknown states. Also, lowering the high capture reward will allow for less lucky episodes that may push the average up and advance the agents too soon. Reworking the capture point mechanic to penalize the agent for stepping out of the point instead of keeping the reward should also incentivize the agent to capture the point to full. Finally, upping the step penalty slightly should increase exploration lightly.
+
+### Changes:
+
+- Environment rework
+  - Shrunk level 1 zone and changed spawn distances (10m --> 25m --> 50m) --> (7m --> 12m)
+  - Added level 2 and 3 zones, introducing obstacles before main battlefield transition
+  - Removed random angle (360 degree) spawning for front-facing spawns (30-degree arc --> 60 --> 90)
+- Curriculum
+  - Added level 2 and 3 lessons
+  - New thresholds: 0.30 for 1a, 0.75 for 1b, 1.00 for 2, and 1.25 for 3
+  - min_episode_length increased: 100 --> 150
+- Rewards rework
+  - Lowered capture reward: 2f --> 1.5f
+  - Lowered capture progress max: 1f --> 0.5f
+  - Agents are now penalized up to the reward they earned if they leave the capture point
+  - Upped step penalty: -0.51f --> -0.75f max
+
+### Results:
+
+Slow heartbeat. Very good learning experience. This run was allowed to run for 3M steps like run 19 for research purposes. The agents learned incredibly slowly, and they did not even make it out of the level 1 area, in all 3M steps. The agents started learning at step ~440K, advanced the curriculum from level 1a --> 1b at step ~880K, immediately dropped out, and completely flatlined until step ~2.2M. Only then did they start learning once more, but they were not able to advance to level 2 by the 3M max_steps. This is not an environmental or reward failure -- it is likely due to my training methods. For both run 19 and this run, I scaled up my buffer_size, likely too high at 200,000 to run 4 envs. That, combined with the curriculum from level 1a --> 1b advancing too quickly, most likely led to the total wipeout.
+
+## Run 21
+
+### Hypothesis:
+
+The buffer size increase to 200K was likely the main culprit. The agents from run 19 started learning and increasing rewards at step ~220K, whereas the agents from run 20 started learning and increasing rewards at step ~440K. Coincidence? I THINK NOT! Although I am running 4 parallel envs, the buffer_size does not need to be 200K. Above 100K is overkill. Something more reasonable, like a ~x20 multiplier (4096 batch --> 80000 buffer) should work reasonably well.
+
+Also, the current curriculum thresholds are a bit too low. In run 20, the curriculum advanced after a spike, then nose-dived and flatlined. The learned behavior of driving forward into the capture point from 7m had not been given enough time to solidify before the agents had to start learning to do the same from 12m away at a wider possible spawn angle. For level 1a --> 1b specifically, the current threshold is 0.3, whereas the approximate reward for a perfect episode in this area is ~2.0. That is essentially asking the agents to score a 15% on a test before they can move up to the next grade -- that would be ludicrous in reality! A more appropriate threshold to test is at least 50% (1.0) or 60% (1.2). These higher thresholds will allow the agent more time to strengthen appropriate network weights before advancing to harder levels.
+
+### Changes:
+
+- YAML
+  - Buffer size decreased to a x20 multiplier (200,000 --> 80,000)
+- Curriculum
+  - Thresholds increased (0.3 --> 1.1 | 0.75 --> 1.2 | 1.0 --> 1.3 | 1.25 --> 1.4 )
+
+### Results:
+
+TBD

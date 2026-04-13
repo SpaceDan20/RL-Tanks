@@ -275,9 +275,9 @@ MonoBehaviour:
     VectorActionDescriptions: []
     VectorActionSpaceType: 1
     hasUpgradedBrainParametersWithActionSpec: 1
-  m_Model: {fileID: 5022602860645237092, guid: 4d13695287c910e4d8cb561aa82807b5, type: 3}
+  m_Model: {fileID: 0}
   m_InferenceDevice: 0
-  m_BehaviorType: 2
+  m_BehaviorType: 0
   m_BehaviorName: TankyBrain
   TeamId: 0
   m_UseChildSensors: 1
@@ -332,7 +332,7 @@ MonoBehaviour:
   environmentCenter: {fileID: 0}
   environmentManager: {fileID: 0}
   capturePoint: {fileID: 0}
-  maxCapturePointDistance: 100
+  maxCapturePointDistance: 75
 --- !u!114 &681566040798514997
 MonoBehaviour:
   m_ObjectHideFlags: 0

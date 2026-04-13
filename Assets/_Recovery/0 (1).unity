@@ -765,10 +765,6 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2084396622794255231, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
-      propertyPath: debugLogging
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 2301985435957126909, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
       propertyPath: environmentManager
       value: 
