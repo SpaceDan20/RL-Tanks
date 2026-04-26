@@ -24,7 +24,7 @@ behaviors:
       window: 10
       play_against_latest_model_ratio: 0.5
       initial_elo: 1200.0
-    max_steps: 1500000 # ~1.5M steps/hr for 4 headless environments
+    max_steps: 5000000 # ~1.5M steps/hr for 4 headless environments
     time_horizon: 256
     summary_freq: 20000
     checkpoint_interval: 100000
@@ -39,7 +39,7 @@ environment_parameters:
           behavior: TankyBrain
           signal_smoothing: true
           min_lesson_length: 150
-          threshold: 1.1
+          threshold: 0.9
         value: 0.0
       - name: level_1b # 12m spawns, front-facing (60 degree arc)
         completion_criteria:
@@ -47,7 +47,7 @@ environment_parameters:
           behavior: TankyBrain
           signal_smoothing: true
           min_lesson_length: 150
-          threshold: 1.2
+          threshold: 1.05
         value: 1.0
       - name: level_2 # 20m spawns, single obstacle, front-facing (60 degree arc)
         completion_criteria:
@@ -55,7 +55,7 @@ environment_parameters:
           behavior: TankyBrain
           signal_smoothing: true
           min_lesson_length: 150
-          threshold: 1.3
+          threshold: 1.1
         value: 2.0
       - name: level_3 # 25m spawns, multiple obstacles, multiple spawns, front-facing (90 degree arc)
         completion_criteria:
@@ -63,7 +63,7 @@ environment_parameters:
           behavior: TankyBrain
           signal_smoothing: true
           min_lesson_length: 150
-          threshold: 1.4
+          threshold: 1.15
         value: 3.0
       - name: main_battle # move to the main battlefield. fights on!
         value: 4.0

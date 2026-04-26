@@ -20,6 +20,11 @@ public class TankyAgent : Agent
     public float minTurnRate = 20f; // minimum degrees per second
     public float maxTurnRate = 60f; // maximum degrees per second at low speed
 
+    [Header("Physics")]
+    public float linearDrag = 3f;
+    public float angularDrag = 5f;
+    public float movementForceGain = 15f;
+
     [Header("Turret")]
     public Transform turret;
     public float turretRotationSpeed = 45f;
@@ -70,7 +75,13 @@ public class TankyAgent : Agent
     {
         rb = GetComponent<Rigidbody>();
         tankHealth = GetComponent<TankHealth>();
+
         rb.sleepThreshold = 0.01f;
+        rb.linearDamping = linearDrag;
+        rb.angularDamping = angularDrag;
+        rb.constraints = RigidbodyConstraints.FreezeRotationX
+                       | RigidbodyConstraints.FreezeRotationZ;
+
         accelerationRate = maxSpeed / accelerationTime;
         decelerationRate = maxSpeed / decelerationTime;
         brakeRate = decelerationRate * brakeMultiplier;
@@ -96,6 +107,7 @@ public class TankyAgent : Agent
         // Reset velocity and angular velocity on episode start
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
+        currentSpeed = 0f;
         rb.Sleep(); // force sleep to ensure it doesn't start with residual motion
 
         // Reset firing cooldown
@@ -198,23 +210,17 @@ public class TankyAgent : Agent
         // Clamp current speed to max limits
         currentSpeed = Mathf.Clamp(currentSpeed, -maxSpeed, maxSpeed);
 
-        // Apply linear velocity based on current speed
-        rb.linearVelocity = Vector3.Lerp(
-            rb.linearVelocity,
-            transform.forward * currentSpeed,
-            Time.deltaTime * 8f);
+        // PD velocity controller — works with the physics solver rather than overriding it
+        Vector3 desiredVelocity = transform.forward * currentSpeed;
+        Vector3 velocityError = desiredVelocity - rb.linearVelocity;
+        rb.AddForce(velocityError * movementForceGain, ForceMode.Acceleration);
 
         // Calculate turn rate based on current speed
         float speedFactor = Mathf.Clamp01(Mathf.Abs(currentSpeed) / maxSpeed);
         float effectiveTurnRate = Mathf.Lerp(maxTurnRate, minTurnRate, speedFactor);
 
-        // Apply turning
-        float targetAngularVelocity = turnInput * effectiveTurnRate * Mathf.Deg2Rad;
-        rb.angularVelocity = Vector3.Lerp(
-            rb.angularVelocity,
-            new Vector3(0, targetAngularVelocity, 0),
-            Time.deltaTime * 8f
-        );
+        float desiredYawRate = turnInput * effectiveTurnRate * Mathf.Deg2Rad;
+        rb.angularVelocity = new Vector3(0f, desiredYawRate, 0f);
 
         // Rotate turret independently of tank body
         if (turret != null)
@@ -312,6 +318,13 @@ private float GetAlignmentPotential()
                 bool enemyCap = capturePoint.IsBeingCapturedByEnemy(this);
                 Debug.Log($"[{gameObject.name}] Capture Point — Dist: {capDistNorm:F2} ({capDist:F1} m) | Angle: {capAngle:F1}° | Capturing: {isCap} | Enemy Capturing: {enemyCap}");
             }
+        }
+
+        // Shift+R: manually end the current episode
+        if (Keyboard.current.shiftKey.isPressed && Keyboard.current.rKey.wasPressedThisFrame)
+        {
+            LogEpisodeStats();
+            EndEpisode();
         }
     }
 

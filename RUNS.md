@@ -362,4 +362,37 @@ Also, the current curriculum thresholds are a bit too low. In run 20, the curric
 
 ### Results:
 
+Massive progress. The agents learned how to navigate toward the point throughout the first 1M steps. They advanced from level 1a --> 1b around step 500K and didn't bottom out, instead demonstrating that their behavior carried over and recovering to 1.0 average reward again by step 1M. The agents then moved to level 2 around step 1M, which has a single obstacle in between the spawnpoints and capture point. Interestingly enough, the agents already knew not to blindly drive into the obstacle early after the advancement (~step 1.1M and 1.2M). They already started trying to go around the obstacle, but they had trouble accurately turning into the capture points once past it. Unfortunately, the agents were not able to advance to level 3, even after ~4M extra steps. The agents, however, showed nearly perfect navigation and capture behavior at step 5M, with winners netting perfect episodes (~2.0f). The issues do not lie in the agent's ability to train at this point -- they lie in the thresholds and a fundamental problem behind how I have been estimating the rewards.
+
+## Run 22
+
+### Hypothesis:
+
+The agents trained better than they ever have, and they demonstrated incredibly more impressive navigation and capture behaviors as soon as 3M steps in. The issue lies with the curriculum thresholds and how I was estimating rewards. I did not take into account that the cumulative reward also counts the losers in an episode, meaning that level 2's threshold of 1.3 is almost impossible to beat. The winner was reliably netting ~2.0f reward per episode, but the loser was netting low positives of ~0-0.6f (still pretty good!). So, on average, in perfect episodes that last 20s max (10s to drive, 10s to capture), the average was (2.0f + 0.3f) / 2, or ~1.15 as shown in the tensorboard graphs. The 1.3 threshold is impossible to meet! By lowering the thresholds to something more reasonable (~80% avg. rewards (1.0f) vs. perfect episodes that include losers (1.15f)), the curriculum will be able to advance past level 2 and likely onto the battlefield within 5M steps.
+
+### Changes:
+
+- Curriculum
+  - Thresholds decreased (1.1 --> 0.9 | 1.2 --> 1.05 | 1.3 --> 1.1 | 1.4 --> 1.15)
+
+### Result:
+
+At 1.3M steps, right before advancing the curriculum to 12m spawns, the agents developed an interesting strategy of turning their tank around and backing up (at an angle) to skim the edge of the capture point. Occasionally, though, they would travel too far forward and simply capture the point. The curriculum then advanced quickly within 100k steps (between 1.3-1.4M steps), sending the agents to the level 2 room with one obstacle in the way. The agents continued using their backing up strategy after advancement, but it was not as effective. They did show hesitation when it came to colliding with the obstacle. The agents stayed in this level 2 room for over 2.5M steps, only advancing around step 4M. Even at 3.9M steps, the agents used their backing up tactic. Occasionally, they would turn too much, ending up with the obstacle between them and the capture point, where the obstacle would trip them up. After spending ~1M steps in the level 3 room (with many obstacles), the agents struggled to demonstrate any meaningful behavior. Sometimes they would spin around to the point where they revealed the long-standing physics bug that locks up movement is still present. Overall, they struggled to learn the overall capture behavior.
+
+## Run 23
+
+### Hypothesis:
+
+The curriculum needs to be looked at still, but the agents discovered a more pressing issue: physics. The physics bug that causes locked-up movement is still present, and it can be verified by watching the tank colliders tip and scrape the ground. The current, semi-realistic physics approach has worked okay for the most part, but it is time for an upgrade. Instead of the tanks hovering above the ground, now would be a good time to let gravity shine so the tanks can finally drive on the actual terrain. Also, instead of directly overwriting linear velocity, converting to a force-based approach and working with Unity's physics system instead of fighting against it will allow for cleaner physics overall. Although this bug only seemed to appear in level 3, it is possible this bug has been corrupting many steps of training altogether.
+
+### Changes:
+
+- Physics
+  - Remove hover-based approach and let gravity drop the tanks on the ground plane.
+  - Convert linear velocity override to force-based approach for linear movement.
+- Observations
+  - Fix observation bug where currentSpeed was not reset on new episodes.
+
+### Result:
+
 TBD

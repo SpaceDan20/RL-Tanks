@@ -753,6 +753,30 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 467834972564136427, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
+      propertyPath: m_Mass
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 467834972564136427, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
+      propertyPath: m_Constraints
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 467834972564136427, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
+      propertyPath: m_Interpolate
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 467834972564136427, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
+      propertyPath: m_LinearDamping
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 467834972564136427, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
+      propertyPath: m_AngularDamping
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 467834972564136427, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1243433836022944016, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
       propertyPath: m_LocalScale.x
       value: 50
@@ -764,6 +788,14 @@ PrefabInstance:
     - target: {fileID: 1870948691020276032, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2084396622794255231, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
+      propertyPath: maxTurnRate
+      value: 45
+      objectReference: {fileID: 0}
+    - target: {fileID: 2084396622794255231, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
+      propertyPath: minTurnRate
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 2084396622794255231, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
       propertyPath: debugLogging
@@ -826,8 +858,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1559868707}
     - target: {fileID: 3826962743994269113, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
+      propertyPath: m_Model
+      value: 
+      objectReference: {fileID: 5022602860645237092, guid: 75d43bfa7dfd2434d9d308a963c7dea8, type: 3}
+    - target: {fileID: 3826962743994269113, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
       propertyPath: m_BehaviorType
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4629485593898889187, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
       propertyPath: environmentManager
@@ -836,6 +872,30 @@ PrefabInstance:
     - target: {fileID: 5056842440942063250, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5401170821905187102, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
+      propertyPath: m_Mass
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 5401170821905187102, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
+      propertyPath: m_Constraints
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5401170821905187102, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
+      propertyPath: m_Interpolate
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5401170821905187102, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
+      propertyPath: m_LinearDamping
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5401170821905187102, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
+      propertyPath: m_AngularDamping
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5401170821905187102, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7028038779145524649, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
       propertyPath: environmentManager
@@ -865,6 +925,14 @@ PrefabInstance:
       propertyPath: environmentManager
       value: 
       objectReference: {fileID: 1559868707}
+    - target: {fileID: 8761435341279403340, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
+      propertyPath: m_Model
+      value: 
+      objectReference: {fileID: 5022602860645237092, guid: 75d43bfa7dfd2434d9d308a963c7dea8, type: 3}
+    - target: {fileID: 8761435341279403340, guid: c875215a7d609664f8c7ece13afc991d, type: 3}
+      propertyPath: m_BehaviorType
+      value: 2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
